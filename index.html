@@ -257,9 +257,9 @@ async function loadVendorMonthly(){
       var v=p.days&&p.days[d]?p.days[d]:"";
       return '<td class="'+cls+'">'+v+'</td>';
     }).join("");
-    return '<tr><td>'+(i+1)+'</td><td>'+esc(p.name)+'</td><td>'+esc(p.employee_no||"-")+'</td>'+cells+'<td><b>'+num(p.total)+'</b></td></tr>';
+    return '<tr><td>'+(i+1)+'</td><td>'+esc(p.name)+'</td>'+cells+'<td><b>'+num(p.total)+'</b></td></tr>';
   }).join("");
-  if(!personRows)personRows='<tr><td colspan="'+(days.length+4)+'">식사기록이 없습니다.</td></tr>';
+  if(!personRows)personRows='<tr><td colspan="'+(days.length+3)+'">식사기록이 없습니다.</td></tr>';
 
   var subtotalCells=daily.map(function(x){
     var cls=x.holiday_label?"day-holiday":x.weekday==="일"?"day-sun":x.weekday==="토"?"day-sat":"";
@@ -270,7 +270,7 @@ async function loadVendorMonthly(){
     return '<td class="'+cls+'">'+(x.sales?money(x.sales):"-")+'</td>'
   }).join("");
 
-  $("vendorDailyMatrix").innerHTML='<table><thead><tr><th>No</th><th>이름</th><th>사번</th>'+dayHeaders+'<th>개인 식수</th></tr><tr><th></th><th></th><th></th>'+weekHeaders+'<th></th></tr></thead><tbody>'+personRows+'<tr><th></th><th>일별 식수 소계</th><th></th>'+subtotalCells+'<th>'+num(j.total_count)+'식</th></tr><tr><th></th><th>일별 매출</th><th></th>'+salesCells+'<th>'+money(j.total_sales)+'</th></tr></tbody></table>';
+  $("vendorDailyMatrix").innerHTML='<table><thead><tr><th>No</th><th>이름</th>'+dayHeaders+'<th>개인 식수</th></tr><tr><th></th><th></th>'+weekHeaders+'<th></th></tr></thead><tbody>'+personRows+'<tr><th></th><th>일별 식수 소계</th>'+subtotalCells+'<th>'+num(j.total_count)+'식</th></tr><tr><th></th><th>일별 매출</th>'+salesCells+'<th>'+money(j.total_sales)+'</th></tr></tbody></table>';
 }
 async function loadVendorMonthlySales(){
   var year=String($("vendorSalesYear").value||todayKst().slice(0,4)),j=await post({action:"vendor_sales_monthly",token:vendorToken,year:year});
