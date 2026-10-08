@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b4f9c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>FCT 식사관리</title>
+<style>
+:root{--b:#0b5fc6;--nav:#0b4f9c;--bg:#f4f7fb;--card:#fff;--line:#dfe5ee;--txt:#162235;--sub:#667085;--red:#d92d20;--green:#087443}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+button,input,select{font:inherit;font-size:16px}button{min-height:44px;touch-action:manipulation}.hidden{display:none!important}
+header{position:sticky;top:0;z-index:20;background:var(--nav);color:white;padding:calc(12px + env(safe-area-inset-top)) 14px 12px}
+.head{max-width:1180px;margin:auto;display:flex;justify-content:space-between;gap:12px}.logo{font-size:20px;font-weight:900}.who{font-size:12px;text-align:right}
+main{max-width:1180px;margin:18px auto;padding:0 14px 50px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 4px 16px #102a4310}
+h2,h3{margin:0 0 12px}h2{font-size:21px}h3{font-size:16px}.muted{color:var(--sub)}.small{font-size:12px}.center{text-align:center}
+.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}input,select{width:100%;min-height:44px;padding:10px 12px;border:1px solid #cfd7e3;border-radius:10px;background:white}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.auto{flex:0 0 auto!important}
+.btn,.btn2,.danger,.okbtn{border:0;border-radius:10px;padding:10px 14px;font-weight:800}.btn{background:var(--b);color:white}.btn2{background:#eef2f6;color:#243447}.danger{background:#feeceb;color:var(--red)}.okbtn{background:#e9f8ef;color:var(--green)}.full{width:100%}.big{padding:14px}
+.notice,.ok,.err{padding:12px;border-radius:12px;margin-top:10px;font-size:13px}.notice{background:#fff8e8;border:1px solid #efd39a;color:#775000}.ok{background:#eaf8ef;border:1px solid #a9dfbb;color:#075c2e}.err{background:#fff0ef;border:1px solid #efb4ae;color:#9e1c16}
+.auth{max-width:560px;margin:28px auto}.switch{display:flex;gap:8px;margin-bottom:14px}.switch button{flex:1;border:1px solid var(--line);background:white;border-radius:10px;font-weight:800}.switch button.on{background:var(--b);color:white}
+.person{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:8px}.person .info{flex:1}.person b{display:block}.tag{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;background:#eaf3ff;color:#164f92}.tag.op{background:#e9f8ef;color:var(--green)}.tag.eng{background:#f0edff;color:#5138cf}
+.searchResults{display:grid;gap:7px;margin-top:8px}.searchItem{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:9px;background:white}.searchItem .info{flex:1}
+.receipt{margin-top:14px;border:2px solid #48a86b;background:#f1fff5;border-radius:16px;padding:16px}.receipt h2{color:#087443;text-align:center}.receipt .total{font-size:26px;font-weight:900;text-align:center;margin:14px 0}.receiptList{display:grid;gap:7px}.receiptRow{background:white;border:1px solid #ccebd7;border-radius:10px;padding:9px}
+.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:8px;margin-bottom:12px;-webkit-overflow-scrolling:touch}.tabs button{white-space:nowrap;border:1px solid var(--line);background:white;border-radius:10px;padding:10px 13px;font-weight:800}.tabs button.on{background:var(--b);color:white}.adminPanel{display:none}.adminPanel.on{display:block}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.kpi{background:white;border:1px solid var(--line);border-radius:14px;padding:14px}.kpi b{display:block;font-size:22px;margin-top:3px}
+.table{overflow:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch}.table table{border-collapse:collapse;width:100%;min-width:780px}.table th,.table td{padding:10px 11px;border-bottom:1px solid #edf0f4;font-size:12px;text-align:left;white-space:nowrap}.table th{background:#f8fafc}
+.qrcard{border:1px solid var(--line);border-radius:14px;padding:14px;background:white}.qrimg{display:block;width:190px;height:190px;max-width:100%;margin:12px auto;background:white}
+.sep{height:1px;background:var(--line);margin:16px 0}.priceGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.periodRow{display:grid;grid-template-columns:100px 80px 1fr 1fr;gap:8px;align-items:end;border-bottom:1px solid #edf0f4;padding:10px 0}
+@media(max-width:800px){.g2,.g3,.kpis{grid-template-columns:1fr}.row.mobile>*{flex:1 1 100%}.card{padding:14px}.priceGrid{grid-template-columns:1fr 1fr}.periodRow{grid-template-columns:1fr 1fr}.periodRow .name{grid-column:1/-1}.qrimg{width:220px;height:220px}}
+</style>
+</head>
+<body>
+<header><div class="head"><div class="logo">FCT 식사관리</div><div id="who" class="who">로그인 전</div></div></header>
+<main>
+<section id="authView" class="auth">
+<div class="card">
+<div class="switch"><button id="loginTab" class="on" type="button">로그인</button><button id="signupTab" type="button">회원가입</button></div>
+<div id="restaurantHint" class="notice hidden"></div>
+<div id="loginForm">
+<h2>사번 로그인</h2><p class="muted">일반 직원은 사번만 입력하면 됩니다.</p>
+<label>사번</label><input id="loginNo" autocomplete="username" placeholder="사번 입력">
+<div id="pinRow" class="hidden"><label>마스터 PIN</label><input id="loginPin" inputmode="numeric" type="password" placeholder="PIN 입력"></div>
+<button id="loginBtn" type="button" class="btn full big" style="margin-top:12px">로그인</button><div id="loginMsg"></div>
+</div>
+<div id="signupForm" class="hidden">
+<h2>회원가입</h2>
+<div class="row mobile"><div><label>이름</label><input id="suName"></div><div><label>사번</label><input id="suNo"></div></div>
+<label>부서</label><select id="suDept"><option>품질</option><option>박막</option><option>전반</option><option>가공</option><option>소성</option><option>경영지원</option></select>
+<label>구분</label><select id="suType"><option value="OP">OP</option><option value="ENGINEER">엔지니어</option></select>
+<button id="signupBtn" type="button" class="btn full big" style="margin-top:12px">회원가입</button><div id="signupMsg"></div>
+</div>
+</div>
+</section>
+
+<section id="userView" class="hidden">
+<div class="grid g2">
+<div class="card">
+<div class="row"><div><h2>식사 등록</h2><div id="identity" class="muted"></div></div><button id="logoutBtn" type="button" class="btn2 auto">로그아웃</button></div>
+<div id="noQr" class="notice hidden">식사 등록은 식당에 부착된 QR을 스캔해 접속해 주세요.</div>
+<div id="mealBox" class="hidden">
+<div class="person"><div class="info"><b id="restaurantName"></b><span class="muted small">QR로 자동 인식된 식당</span></div><span class="tag">고정 QR</span></div>
+<div class="sep"></div>
+<h3>같이 식사하는 사람</h3>
+<div class="notice">본인은 자동 포함됩니다. 직원은 이름 또는 사번으로 검색해서 추가할 수 있습니다.</div>
+<label>직원 검색</label>
+<div class="row"><input id="employeeSearch" placeholder="이름 또는 사번"><button id="searchBtn" type="button" class="btn2 auto">검색</button></div>
+<div id="searchResults" class="searchResults"></div>
+<div id="externalBlock" class="hidden">
+<label>외부업체 엔지니어 추가</label>
+<div class="row mobile"><input id="extCompany" placeholder="업체명"><input id="extName" placeholder="이름"><button id="addExternalBtn" type="button" class="btn2 auto">추가</button></div>
+</div>
+<div id="participants"></div>
+<div class="row" style="margin-top:10px"><button id="saveFavBtn" type="button" class="btn2">현재 동행자 저장</button><button id="clearFavBtn" type="button" class="btn2">저장목록 비우기</button></div>
+<label style="display:flex;align-items:center;gap:8px;font-weight:700"><input id="autoLoad" type="checkbox" style="width:auto;min-height:0" checked> QR 접속 시 저장된 동행자 자동 불러오기</label>
+<div id="favInfo" class="muted small"></div>
+<button id="registerBtn" type="button" class="btn full big" style="margin-top:14px">현재 인원 전체 식사 등록</button>
+<div id="mealMsg"></div><div id="receipt" class="receipt hidden"></div>
+</div>
+</div>
+<div class="card"><h2>최근 등록내역</h2><div class="table"><table><thead><tr><th>일자</th><th>시간</th><th>식당</th><th>식사</th><th>대상</th></tr></thead><tbody id="recentBody"></tbody></table></div></div>
+</div>
+</section>
+
+<section id="adminView" class="hidden" style="margin-top:14px">
+<div id="adminTabs" class="tabs"><button type="button" class="on" data-tab="dash">현황</button><button type="button" data-tab="users">직원관리</button><button type="button" data-tab="restaurants">식당·QR</button><button type="button" data-tab="records">식사기록·정산</button><button type="button" data-tab="settings">설정</button></div>
+<div id="tab-dash" class="adminPanel on"><div id="kpis" class="kpis"></div><div class="card" style="margin-top:12px"><h2>이번 달 집계</h2><div id="dashSummary" class="table"></div></div></div>
+
+<div id="tab-users" class="adminPanel">
+<div class="grid g2">
+<div class="card">
+<h2>직원 등록 / 수정</h2><input id="euId" type="hidden">
+<div class="row mobile"><div><label>사번</label><input id="euNo"></div><div><label>이름</label><input id="euName"></div></div>
+<div class="row mobile"><div><label>부서</label><select id="euDept"><option>품질</option><option>박막</option><option>전반</option><option>가공</option><option>소성</option><option>경영지원</option></select></div><div><label>구분</label><select id="euType"><option value="OP">OP</option><option value="ENGINEER">엔지니어</option></select></div></div>
+<button id="saveUserBtn" type="button" class="btn" style="margin-top:12px">저장</button> <button id="clearUserBtn" type="button" class="btn2">초기화</button>
+<div class="sep"></div><h3>직원 일괄등록</h3><p class="muted small">Excel에서 CSV로 저장 후 업로드: 사번, 이름, 부서, 구분</p><input id="csvFile" type="file" accept=".csv,text/csv"><button id="downloadUsersBtn" type="button" class="btn2" style="margin-top:10px">직원목록 Excel용 CSV</button>
+</div>
+<div class="card"><div class="row"><h2 style="margin:0">직원 목록</h2><button id="reloadUsersBtn" type="button" class="btn2 auto">새로고침</button></div><div class="table" style="margin-top:12px"><table><thead><tr><th>사번</th><th>이름</th><th>부서</th><th>구분</th><th>권한</th><th>상태</th><th>관리</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
+</div></div>
+
+<div id="tab-restaurants" class="adminPanel">
+<div class="card"><h2>식당 등록 / 수정</h2><input id="erId" type="hidden"><label>식당명</label><input id="erName"><div id="priceFields" class="priceGrid"></div><button id="saveRestaurantBtn" type="button" class="btn" style="margin-top:12px">저장</button> <button id="clearRestaurantBtn" type="button" class="btn2">초기화</button><p class="muted small">식당을 저장하면 고정 QR이 자동 생성됩니다.</p></div>
+<div id="restaurantCards" class="grid g3" style="margin-top:12px"></div>
+</div>
+
+<div id="tab-records" class="adminPanel">
+<div class="card"><div class="row mobile"><div><label>시작일</label><input id="rf" type="date"></div><div><label>종료일</label><input id="rt" type="date"></div><button id="loadRecordsBtn" type="button" class="btn auto">조회</button><button id="downloadRecordsBtn" type="button" class="btn2 auto">Excel용 CSV</button></div></div>
+<div class="card" style="margin-top:12px"><h2>정산 집계</h2><div id="recordSummary" class="table"></div></div>
+<div class="card" style="margin-top:12px"><h2>전체 식사기록</h2><div class="table"><table><thead><tr><th>일자</th><th>시간</th><th>이름</th><th>사번</th><th>구분</th><th>부서/업체</th><th>식당</th><th>식사</th><th>등록자</th><th>금액</th><th>관리</th></tr></thead><tbody id="recordsBody"></tbody></table></div></div>
+</div>
+
+<div id="tab-settings" class="adminPanel">
+<div class="grid g2">
+<div class="card"><h2>식사시간 설정</h2><p class="muted small">아침·점심·저녁·야식을 각각 사용/중지하고 시간을 바꿀 수 있습니다. 야식처럼 자정을 넘는 시간도 지원합니다.</p><div id="periodSettings"></div><button id="savePeriodsBtn" type="button" class="btn" style="margin-top:12px">식사시간 저장</button></div>
+<div class="card"><h2>마스터 PIN 변경</h2><div id="pinChangeNotice" class="notice hidden">현재 임시 PIN을 사용 중입니다. 새 PIN으로 변경해 주세요.</div><label>현재 PIN</label><input id="oldPin" type="password" inputmode="numeric"><label>새 PIN</label><input id="newPin" type="password" inputmode="numeric"><button id="changePinBtn" type="button" class="btn" style="margin-top:12px">PIN 변경</button></div>
+</div></div>
+</section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var API="https://liviahmghyiazugbgfhl.supabase.co/functions/v1/fct-meal-api";
+var QRAPI="https://liviahmghyiazugbgfhl.supabase.co/functions/v1/fct-meal";
+var SITE_BASE="https://fjfnkh8fnj-a11y.github.io/FCT-MEAL/";
+function $(id){return document.getElementById(id)}
+var token="";try{token=localStorage.getItem("fct_meal_token")||""}catch(e){}
+var user=null,restaurantId=new URLSearchParams(location.search).get("restaurant")||"",restaurant=null;
+var participants=[],savedCompanions=[],adminUsers=[],adminRestaurants=[],adminPeriods=[],adminRecords=[];
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]})}
+function msg(id,text,ok){var e=$(id);e.className=text?(ok?"ok":"err"):"";e.textContent=text||""}
+async function post(data){try{var r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});return await r.json()}catch(e){return {ok:false,message:"서버 연결에 실패했습니다."}}}
+function setToken(v){token=v||"";try{if(token)localStorage.setItem("fct_meal_token",token);else localStorage.removeItem("fct_meal_token")}catch(e){}}
+function authMode(m){$("loginForm").classList.toggle("hidden",m!=="login");$("signupForm").classList.toggle("hidden",m!=="signup");$("loginTab").classList.toggle("on",m==="login");$("signupTab").classList.toggle("on",m==="signup")}
+$("loginTab").onclick=function(){authMode("login")};$("signupTab").onclick=function(){authMode("signup")};
+async function loadRestaurant(){if(!restaurantId)return;var j=await post({action:"restaurant_public",restaurant_id:restaurantId});if(j.ok){restaurant=j.restaurant;$("restaurantHint").classList.remove("hidden");$("restaurantHint").textContent="현재 식당: "+restaurant.name}}
+$("signupBtn").onclick=async function(){var j=await post({action:"signup",employee_no:$("suNo").value,name:$("suName").value,department:$("suDept").value,worker_type:$("suType").value});msg("signupMsg",j.message,j.ok);if(j.ok){$("loginNo").value=$("suNo").value;authMode("login")}};
+$("loginBtn").onclick=async function(){var j=await post({action:"login",employee_no:$("loginNo").value,pin:$("loginPin").value});if(j.requires_pin){$("pinRow").classList.remove("hidden");msg("loginMsg",j.message,false);return}if(!j.ok){msg("loginMsg",j.message,false);return}setToken(j.token);user=j.user;await enter()};
+$("logoutBtn").onclick=async function(){await post({action:"logout",token:token});setToken("");location.reload()};
+async function restore(){if(!token)return;var j=await post({action:"me",token:token});if(j.ok){user=j.user;await enter()}else setToken("")}
+async function enter(){
+$("authView").classList.add("hidden");$("userView").classList.remove("hidden");
+$("who").textContent=user.name+" · "+user.department+" · "+(user.role==="USER"?"일반":user.role==="OWNER"?"최초 마스터":"마스터");
+$("identity").innerHTML="<b>"+esc(user.name)+"</b> · "+esc(user.department)+" · "+esc(user.employee_no)+" · "+(user.worker_type==="OP"?"OP":"엔지니어");
+if(restaurant){$("restaurantName").textContent=restaurant.name;$("mealBox").classList.remove("hidden");$("noQr").classList.add("hidden")}else{$("mealBox").classList.add("hidden");$("noQr").classList.remove("hidden")}
+$("externalBlock").classList.toggle("hidden",!(user.worker_type==="ENGINEER"||user.role!=="USER"));
+$("adminView").classList.toggle("hidden",user.role==="USER");$("pinChangeNotice").classList.toggle("hidden",!user.pin_must_change);
+await loadPrefs();renderParticipants();await loadRecent();if(user.role!=="USER")await loadDashboard()
+}
+async function loadPrefs(){var j=await post({action:"get_preferences",token:token});if(j.ok){savedCompanions=j.companions||[];$("autoLoad").checked=j.auto_load!==false;$("favInfo").textContent="저장된 동행자 "+savedCompanions.length+"명";if(restaurant&&$("autoLoad").checked)participants=savedCompanions.map(function(x){return JSON.parse(JSON.stringify(x))})}}
+function renderParticipants(){var s='<div class="person"><div class="info"><b>'+esc(user?user.name:"")+' <span class="tag '+(user&&user.worker_type==="OP"?"op":"eng")+'">'+(user&&user.worker_type==="OP"?"OP":"엔지니어")+'</span></b><span class="muted small">'+esc(user?user.department:"")+' · 본인</span></div></div>';participants.forEach(function(p,i){if(p.kind==="employee")s+='<div class="person"><div class="info"><b>'+esc(p.name)+' <span class="tag '+(p.worker_type==="OP"?"op":"eng")+'">'+(p.worker_type==="OP"?"OP":"엔지니어")+'</span></b><span class="muted small">'+esc(p.department)+' · '+esc(p.employee_no)+'</span></div><button type="button" class="danger auto" data-rm="'+i+'">삭제</button></div>';else s+='<div class="person"><div class="info"><b>'+esc(p.name)+' <span class="tag eng">외부 엔지니어</span></b><span class="muted small">'+esc(p.company)+'</span></div><button type="button" class="danger auto" data-rm="'+i+'">삭제</button></div>'});$("participants").innerHTML=s;Array.prototype.forEach.call($("participants").querySelectorAll("[data-rm]"),function(b){b.onclick=function(){participants.splice(Number(b.getAttribute("data-rm")),1);renderParticipants()}})}
+async function searchEmployees(){var q=$("employeeSearch").value.trim();var j=await post({action:"search_employees",token:token,q:q});if(!j.ok){alert(j.message);return}var rows=j.employees||[];$("searchResults").innerHTML=rows.length?rows.map(function(x,i){return '<div class="searchItem"><div class="info"><b>'+esc(x.name)+'</b><div class="muted small">'+esc(x.employee_no)+' · '+esc(x.department)+' · '+(x.worker_type==="OP"?"OP":"엔지니어")+'</div></div><button type="button" class="btn2 auto" data-add="'+i+'">추가</button></div>'}).join(""):'<div class="muted small">검색 결과가 없습니다.</div>';Array.prototype.forEach.call($("searchResults").querySelectorAll("[data-add]"),function(b){b.onclick=function(){var x=rows[Number(b.getAttribute("data-add"))];if(!participants.some(function(p){return p.kind==="employee"&&p.employee_no===x.employee_no}))participants.push({kind:"employee",employee_no:x.employee_no,name:x.name,department:x.department,worker_type:x.worker_type});renderParticipants()}})}
+$("searchBtn").onclick=searchEmployees;$("employeeSearch").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();searchEmployees()}});
+$("addExternalBtn").onclick=function(){var c=$("extCompany").value.trim(),n=$("extName").value.trim();if(!c||!n){alert("업체명과 이름을 입력하세요.");return}participants.push({kind:"external",company:c,name:n});$("extName").value="";renderParticipants()};
+$("saveFavBtn").onclick=async function(){var j=await post({action:"save_preferences",token:token,companions:participants,auto_load:$("autoLoad").checked});alert(j.message||"저장 완료");if(j.ok){savedCompanions=participants.map(function(x){return JSON.parse(JSON.stringify(x))});$("favInfo").textContent="저장된 동행자 "+savedCompanions.length+"명"}};
+$("clearFavBtn").onclick=async function(){if(!confirm("저장된 동행자 목록을 비울까요?"))return;var j=await post({action:"save_preferences",token:token,companions:[],auto_load:$("autoLoad").checked});if(j.ok){savedCompanions=[];$("favInfo").textContent="저장된 동행자 0명";alert("저장목록을 비웠습니다.")}};
+$("autoLoad").onchange=async function(){await post({action:"save_preferences",token:token,companions:savedCompanions,auto_load:$("autoLoad").checked})};
+$("registerBtn").onclick=async function(){if(!restaurantId){msg("mealMsg","식당 QR로 접속해 주세요.",false);return}$("registerBtn").disabled=true;$("registerBtn").textContent="등록 중...";var j=await post({action:"register_meal",token:token,restaurant_id:restaurantId,participants:participants.map(function(p){return p.kind==="employee"?{kind:"employee",employee_no:p.employee_no}:{kind:"external",company:p.company,name:p.name}})});$("registerBtn").disabled=false;$("registerBtn").textContent="현재 인원 전체 식사 등록";if(!j.ok){msg("mealMsg",j.message,false);return}msg("mealMsg","",true);showReceipt(j);await loadRecent();if(user.role!=="USER")await loadDashboard()};
+function showReceipt(j){var rows=(j.registered||[]).map(function(x){return '<div class="receiptRow"><b>'+esc(x.name)+'</b><div class="muted small">'+esc(x.detail)+'</div></div>'}).join("");var skip=(j.skipped&&j.skipped.length)?'<div class="notice">제외: '+j.skipped.map(function(x){return esc(x.name)+" ("+esc(x.reason)+")"}).join(", ")+'</div>':"";$("receipt").innerHTML='<h2>✓ 식사 등록 완료</h2><div class="center"><b>'+esc(j.restaurant)+'</b> · '+esc(j.period_label)+' · '+esc(j.time)+'</div><div class="receiptList" style="margin-top:12px">'+rows+'</div><div class="total">총 '+Number(j.total||0)+'명 등록</div><div class="center muted small">식당에 이 화면을 보여주세요.</div>'+skip;$("receipt").classList.remove("hidden");$("receipt").scrollIntoView({behavior:"smooth",block:"center"})}
+async function loadRecent(){var j=await post({action:"recent",token:token});$("recentBody").innerHTML=j.ok&&j.records.length?j.records.map(function(r){return "<tr><td>"+esc(r.meal_date)+"</td><td>"+esc(String(r.meal_time).slice(0,8))+"</td><td>"+esc(r.restaurant_name)+"</td><td>"+esc(r.period_label)+"</td><td>"+esc(r.person_name)+"</td></tr>"}).join(""):'<tr><td colspan="5">등록내역이 없습니다.</td></tr>'}
+
+Array.prototype.forEach.call($("adminTabs").querySelectorAll("[data-tab]"),function(b){b.onclick=function(){adminTab(b.getAttribute("data-tab"))}});
+function adminTab(n){Array.prototype.forEach.call($("adminTabs").querySelectorAll("[data-tab]"),function(b){b.classList.toggle("on",b.getAttribute("data-tab")===n)});Array.prototype.forEach.call(document.querySelectorAll(".adminPanel"),function(p){p.classList.remove("on")});$("tab-"+n).classList.add("on");if(n==="users")loadUsers();if(n==="restaurants")loadRestaurants();if(n==="records")loadRecords();if(n==="settings")loadPeriods()}
+function todayKst(){return new Date(Date.now()+9*3600000).toISOString().slice(0,10)}function num(n){return new Intl.NumberFormat("ko-KR").format(n||0)}
+async function loadDashboard(){var t=todayKst(),f=t.slice(0,7)+"-01",j=await post({action:"admin_records",token:token,from:f,to:t});if(!j.ok)return;adminRecords=j.records||[];var today=adminRecords.filter(function(x){return x.meal_date===t}),amt=adminRecords.reduce(function(s,x){return s+Number(x.price||0)},0),labels={};today.forEach(function(x){labels[x.period_label]=(labels[x.period_label]||0)+1});$("kpis").innerHTML=[["오늘 총 식수",today.length+"식"],["오늘 점심",(labels["점심"]||0)+"식"],["오늘 저녁",(labels["저녁"]||0)+"식"],["오늘 아침/야식",((labels["아침"]||0)+(labels["야식"]||0))+"식"],["이번달 예상 식대",num(amt)+"원"]].map(function(x){return '<div class="kpi"><span class="muted small">'+x[0]+'</span><b>'+x[1]+'</b></div>'}).join("");$("dashSummary").innerHTML=summaryTable(adminRecords)}
+async function loadUsers(){var j=await post({action:"admin_users",token:token});if(!j.ok){alert(j.message);return}adminUsers=j.users||[];$("usersBody").innerHTML=adminUsers.filter(function(x){return !/^TEST/.test(x.employee_no)}).map(function(x){var role=x.role==="OWNER"?"최초 마스터":x.role==="MASTER"?"마스터":"일반",m="";if(user.role==="OWNER"&&x.role!=="OWNER")m=x.role==="MASTER"?'<button type="button" class="danger" data-revoke="'+x.id+'">마스터 해제</button>':'<button type="button" class="okbtn" data-grant="'+x.id+'">마스터 지정</button>';var st=x.role==="OWNER"?"":'<button type="button" class="'+(x.active?"danger":"okbtn")+'" data-status="'+x.id+'" data-on="'+(!x.active)+'">'+(x.active?"사용중지":"사용복구")+'</button>';return '<tr><td>'+esc(x.employee_no)+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.department)+'</td><td>'+(x.worker_type==="OP"?"OP":"엔지니어")+'</td><td>'+role+'</td><td>'+(x.active?"사용":"중지")+'</td><td><button type="button" class="btn2" data-edit="'+x.id+'">수정</button> '+m+' '+st+'</td></tr>'}).join("");bindUserButtons()}
+function bindUserButtons(){Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-edit]"),function(b){b.onclick=function(){editUser(b.getAttribute("data-edit"))}});Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-grant]"),function(b){b.onclick=function(){setMaster(b.getAttribute("data-grant"),true)}});Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-revoke]"),function(b){b.onclick=function(){setMaster(b.getAttribute("data-revoke"),false)}});Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-status]"),function(b){b.onclick=function(){toggleUser(b.getAttribute("data-status"),b.getAttribute("data-on")==="true")}})}
+function clearUserForm(){$("euId").value="";$("euNo").value="";$("euNo").disabled=false;$("euName").value=""}function editUser(id){var x=adminUsers.find(function(y){return y.id===id});if(!x)return;$("euId").value=x.id;$("euNo").value=x.employee_no;$("euNo").disabled=true;$("euName").value=x.name;$("euDept").value=x.department;$("euType").value=x.worker_type}
+$("clearUserBtn").onclick=clearUserForm;$("reloadUsersBtn").onclick=loadUsers;
+$("saveUserBtn").onclick=async function(){var j=await post({action:"admin_save_user",token:token,id:$("euId").value,employee_no:$("euNo").value,name:$("euName").value,department:$("euDept").value,worker_type:$("euType").value,active:true});if(!j.ok){alert(j.message);return}clearUserForm();loadUsers()};
+async function toggleUser(id,on){var x=adminUsers.find(function(y){return y.id===id});if(!x)return;var j=await post({action:"admin_save_user",token:token,id:x.id,employee_no:x.employee_no,name:x.name,department:x.department,worker_type:x.worker_type,active:on});if(!j.ok)alert(j.message);loadUsers()}
+async function setMaster(id,on){var pin="";if(on){pin=prompt("신규 마스터 임시 PIN(숫자 4~8자리)")||"";if(!pin)return}var j=await post({action:"owner_set_master",token:token,id:id,enabled:on,pin:pin});alert(j.message||"완료");if(j.ok)loadUsers()}
+$("csvFile").onchange=async function(){var f=this.files&&this.files[0];if(!f)return;var rows=parseCSV(await f.text());var j=await post({action:"admin_bulk_users",token:token,rows:rows});alert(j.ok?("신규 "+j.created+"명 / 수정 "+j.updated+"명 / 제외 "+j.skipped+"명"):j.message);this.value="";loadUsers()};
+function parseCSV(t){var lines=t.replace(/^﻿/,"").split(/?
+/).filter(function(x){return x.trim()!==""});if(!lines.length)return[];function row(line){var out=[],s="",q=false;for(var i=0;i<line.length;i++){var ch=line[i];if(ch==='"'){if(q&&line[i+1]==='"'){s+='"';i++}else q=!q}else if(ch===","&&!q){out.push(s);s=""}else s+=ch}out.push(s);return out}var h=row(lines[0]).map(function(x){return x.trim()});return lines.slice(1).map(function(l){var v=row(l),o={};h.forEach(function(k,i){o[k]=(v[i]||"").trim()});return o})}
+$("downloadUsersBtn").onclick=function(){downloadCSV(adminUsers.filter(function(x){return !/^TEST/.test(x.employee_no)}).map(function(x){return {"사번":x.employee_no,"이름":x.name,"부서":x.department,"구분":x.worker_type==="OP"?"OP":"엔지니어","권한":x.role,"상태":x.active?"사용":"중지"}}),"FCT_직원목록.csv")};
+
+async function loadRestaurants(){var j=await post({action:"admin_restaurants",token:token});if(!j.ok){alert(j.message);return}adminRestaurants=(j.restaurants||[]).filter(function(r){return r.name!=="검증식당"});adminPeriods=j.periods||[];renderPriceFields();$("restaurantCards").innerHTML=adminRestaurants.map(function(r){var qr=QRAPI+"?qr="+encodeURIComponent(r.id),target=SITE_BASE+"?restaurant="+encodeURIComponent(r.id);return '<div class="qrcard"><div class="row"><div><b>'+esc(r.name)+'</b><div class="muted small">'+esc(target)+'</div></div><span class="tag">'+(r.active?"사용중":"중지")+'</span></div><img class="qrimg" alt="식당 QR" src="'+esc(qr)+'"><div class="row"><button type="button" class="btn2" data-er="'+r.id+'">수정</button><button type="button" class="btn2" data-qr="'+r.id+'">QR 크게보기</button><button type="button" class="'+(r.active?"danger":"okbtn")+'" data-rt="'+r.id+'" data-on="'+(!r.active)+'">'+(r.active?"사용중지":"사용")+'</button></div></div>'}).join("");bindRestaurantButtons()}
+function renderPriceFields(){var src=adminPeriods.length?adminPeriods:[{code:"BREAKFAST",label:"아침"},{code:"LUNCH",label:"점심"},{code:"DINNER",label:"저녁"},{code:"LATE_NIGHT",label:"야식"}];$("priceFields").innerHTML=src.map(function(p){return '<div><label>'+esc(p.label)+' 단가</label><input type="number" min="0" id="price_'+p.code+'" value="0"></div>'}).join("")}
+function bindRestaurantButtons(){Array.prototype.forEach.call($("restaurantCards").querySelectorAll("[data-er]"),function(b){b.onclick=function(){editRestaurant(b.getAttribute("data-er"))}});Array.prototype.forEach.call($("restaurantCards").querySelectorAll("[data-qr]"),function(b){b.onclick=function(){window.open(QRAPI+"?qr="+encodeURIComponent(b.getAttribute("data-qr")),"_blank")}});Array.prototype.forEach.call($("restaurantCards").querySelectorAll("[data-rt]"),function(b){b.onclick=function(){toggleRestaurant(b.getAttribute("data-rt"),b.getAttribute("data-on")==="true")}})}
+function clearRestaurant(){$("erId").value="";$("erName").value="";adminPeriods.forEach(function(p){var e=$("price_"+p.code);if(e)e.value=0})}$("clearRestaurantBtn").onclick=clearRestaurant;
+function editRestaurant(id){var r=adminRestaurants.find(function(x){return x.id===id});if(!r)return;$("erId").value=r.id;$("erName").value=r.name;adminPeriods.forEach(function(p){var e=$("price_"+p.code);if(e)e.value=Number((r.prices||{})[p.code]||0)})}
+$("saveRestaurantBtn").onclick=async function(){var prices={};adminPeriods.forEach(function(p){var e=$("price_"+p.code);prices[p.code]=e?Number(e.value||0):0});var j=await post({action:"admin_save_restaurant",token:token,id:$("erId").value,name:$("erName").value,prices:prices});if(!j.ok){alert(j.message);return}clearRestaurant();loadRestaurants()};async function toggleRestaurant(id,on){var j=await post({action:"admin_toggle_restaurant",token:token,id:id,active:on});if(!j.ok)alert(j.message);loadRestaurants()}
+
+async function loadPeriods(){var j=await post({action:"admin_periods",token:token});if(!j.ok){alert(j.message);return}adminPeriods=j.periods||[];$("periodSettings").innerHTML=adminPeriods.map(function(p){return '<div class="periodRow"><div class="name"><b>'+esc(p.label)+'</b></div><div><label>사용</label><input type="checkbox" id="p_active_'+p.code+'" style="width:auto;min-height:0" '+(p.active?"checked":"")+'></div><div><label>시작</label><input type="time" id="p_start_'+p.code+'" value="'+String(p.start_time).slice(0,5)+'"></div><div><label>종료</label><input type="time" id="p_end_'+p.code+'" value="'+String(p.end_time).slice(0,5)+'"></div></div>'}).join("")}
+$("savePeriodsBtn").onclick=async function(){var rows=adminPeriods.map(function(p){return {code:p.code,active:$("p_active_"+p.code).checked,start_time:$("p_start_"+p.code).value,end_time:$("p_end_"+p.code).value}});var j=await post({action:"admin_save_periods",token:token,periods:rows});alert(j.message||"저장 완료")};
+$("changePinBtn").onclick=async function(){var j=await post({action:"change_pin",token:token,old_pin:$("oldPin").value,new_pin:$("newPin").value});alert(j.message);if(j.ok){$("oldPin").value="";$("newPin").value="";user.pin_must_change=false;$("pinChangeNotice").classList.add("hidden")}};
+
+async function loadRecords(){if(!$("rf").value){var t=todayKst();$("rf").value=t.slice(0,7)+"-01";$("rt").value=t}var j=await post({action:"admin_records",token:token,from:$("rf").value,to:$("rt").value});if(!j.ok){alert(j.message);return}adminRecords=(j.records||[]).filter(function(x){return x.restaurant_name!=="검증식당"});$("recordSummary").innerHTML=summaryTable(adminRecords);$("recordsBody").innerHTML=adminRecords.length?adminRecords.map(function(x){var g=x.person_type==="EXTERNAL"?x.external_company:x.department;return '<tr><td>'+esc(x.meal_date)+'</td><td>'+esc(String(x.meal_time).slice(0,8))+'</td><td>'+esc(x.person_name)+'</td><td>'+esc(x.employee_no||"-")+'</td><td>'+esc(x.person_type==="EXTERNAL"?"외부 엔지니어":x.worker_type==="OP"?"OP":"엔지니어")+'</td><td>'+esc(g||"-")+'</td><td>'+esc(x.restaurant_name)+'</td><td>'+esc(x.period_label)+'</td><td>'+esc(x.registrant_name)+'</td><td>'+num(x.price)+'원</td><td><button type="button" class="danger" data-del="'+x.id+'">삭제</button></td></tr>'}).join(""):'<tr><td colspan="11">기록이 없습니다.</td></tr>';Array.prototype.forEach.call($("recordsBody").querySelectorAll("[data-del]"),function(b){b.onclick=function(){deleteRecord(b.getAttribute("data-del"))}})}
+$("loadRecordsBtn").onclick=loadRecords;$("downloadRecordsBtn").onclick=function(){downloadCSV(adminRecords.map(function(x){return {"일자":x.meal_date,"시간":String(x.meal_time).slice(0,8),"이름":x.person_name,"사번":x.employee_no||"","구분":x.person_type==="EXTERNAL"?"외부 엔지니어":x.worker_type==="OP"?"OP":"엔지니어","부서/업체":x.person_type==="EXTERNAL"?x.external_company:x.department,"식당":x.restaurant_name,"식사":x.period_label,"등록자":x.registrant_name,"금액":x.price}}),"FCT_식사기록_"+$("rf").value+"_"+$("rt").value+".csv")};
+async function deleteRecord(id){if(!confirm("이 식사기록을 삭제할까요?"))return;var j=await post({action:"admin_delete_record",token:token,id:id});if(!j.ok)alert(j.message);loadRecords()}
+function summaryTable(rows){var m={};rows.forEach(function(x){var g=x.person_type==="EXTERNAL"?(x.external_company||"외부업체"):(x.department||"-"),k=x.restaurant_name+"|"+x.period_label+"|"+g;if(!m[k])m[k]={r:x.restaurant_name,p:x.period_label,g:g,c:0,a:0};m[k].c++;m[k].a+=Number(x.price||0)});var a=Object.keys(m).map(function(k){return m[k]});return '<table><thead><tr><th>식당</th><th>식사</th><th>부서/업체</th><th>식수</th><th>금액</th></tr></thead><tbody>'+(a.length?a.map(function(x){return '<tr><td>'+esc(x.r)+'</td><td>'+esc(x.p)+'</td><td>'+esc(x.g)+'</td><td>'+x.c+'</td><td>'+num(x.a)+'원</td></tr>'}).join(""):'<tr><td colspan="5">기록이 없습니다.</td></tr>')+'</tbody></table>'}
+function downloadCSV(rows,name){if(!rows.length){alert("다운로드할 데이터가 없습니다.");return}var h=Object.keys(rows[0]),lines=[h.map(csvCell).join(",")];rows.forEach(function(r){lines.push(h.map(function(k){return csvCell(r[k])}).join(","))});var blob=new Blob(["﻿"+lines.join("
+")],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},500)}
+function csvCell(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'}
+(async function(){var t=todayKst();$("rf").value=t.slice(0,7)+"-01";$("rt").value=t;await loadRestaurant();await restore()})();
+})();
+</script>
+</body>
+</html>
