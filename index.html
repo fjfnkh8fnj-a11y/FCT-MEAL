@@ -1320,7 +1320,7 @@ function renderUserCalendar(days,meals){
     if(d.saturday)cls.push("sat");
     if(today)cls.push("today");
     if(own.length)cls.push("hasMeal");
-    var status=d.override_mode==="ALLOW"?"식사가능":(d.override_mode==="BLOCK"||d.blocked)?"식대지급":"";
+    var status=(d.override_mode==="BLOCK"||d.blocked)?"식대지급":"";
     var reason=d.override_mode==="ALLOW"?(d.note||"관리자 예외"):(d.blocked?(d.holiday_label||d.reason||d.note||""):(d.note||""));
     var note=reason?'<div class="userCalNote">'+esc(reason)+'</div>':"";
     var mealsHtml=own.map(function(m){return '<div class="myMealChip" title="'+esc(m.restaurant_name+" · "+m.period_label)+'"><b>'+esc(m.period_label)+'</b><span>'+esc(m.restaurant_name)+'</span></div>';}).join("");
