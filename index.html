@@ -455,6 +455,63 @@ header{min-height:78px!important;overflow:visible!important}
   }
 }
 
+
+/* rev27: three distinct hero images + small left-bottom dots */
+.authSlideBg.slide1{
+  background-image:url("https://cdn.sisajournal-e.com/news/photo/202311/305454_130352_4926.jpg")!important;
+  background-position:50% 12%!important;
+  transform:scale(1)!important;
+}
+.authSlideBg.slide2{
+  background-image:url("./assets/fct-building-user.jpg?rev=27")!important;
+  background-position:35% 30%!important;
+  transform:scale(1)!important;
+}
+.authSlideBg.slide3{
+  background-image:url("https://fctc.co.kr/img/sub2/product_img1.jpg")!important;
+  background-position:center!important;
+  transform:scale(1)!important;
+  filter:contrast(1.12) saturate(1.08) brightness(.92)!important;
+}
+.heroDots{
+  left:18px!important;
+  right:auto!important;
+  bottom:14px!important;
+  transform:none!important;
+  gap:5px!important;
+}
+.heroDots button{
+  width:6px!important;
+  height:6px!important;
+  min-width:6px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.56)!important;
+}
+.heroDots button.on{
+  width:16px!important;
+  min-width:16px!important;
+  background:#fff!important;
+}
+@media(max-width:800px){
+  .authSlideBg.slide1{background-position:50% 8%!important}
+  .authSlideBg.slide2{background-position:35% 28%!important}
+  .authSlideBg.slide3{background-position:center!important}
+  .heroDots{
+    left:12px!important;
+    bottom:10px!important;
+    gap:4px!important;
+  }
+  .heroDots button{
+    width:5px!important;
+    height:5px!important;
+    min-width:5px!important;
+  }
+  .heroDots button.on{
+    width:14px!important;
+    min-width:14px!important;
+  }
+}
+
 </style>
 </head>
 <body>
