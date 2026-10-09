@@ -915,6 +915,54 @@ html,body{max-width:100%;overflow-x:hidden}
 .restaurantActions{gap:6px;flex-wrap:wrap}
 .restaurantActions .danger{white-space:nowrap}
 
+
+/* rev42: restaurant-friendly registration confirmation modal */
+.receiptModal{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;padding:24px}
+.receiptModal.hidden{display:none!important}
+.receiptModalBackdrop{position:absolute;inset:0;background:rgba(8,20,48,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.receiptModalPanel{position:relative;z-index:1;width:min(560px,100%);max-height:calc(100dvh - 36px);display:flex;flex-direction:column;background:#fff;border-radius:24px;box-shadow:0 28px 90px rgba(0,0,0,.28);overflow:hidden}
+.receiptPopup{margin:0;border:0;border-radius:0;padding:26px 26px 18px;background:linear-gradient(180deg,#f2fff7,#fff);overflow:auto}
+.receiptSuccessMark{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;background:#e7f8ed;color:#087443;font-size:34px;font-weight:900}
+.receiptPopup h2{margin:0;text-align:center;font-size:28px;color:#087443}
+.receiptRestaurant{text-align:center;margin-top:13px;font-size:27px;font-weight:900;color:#10224a;letter-spacing:-.03em}
+.receiptMeta{text-align:center;margin-top:4px;font-size:17px;font-weight:800;color:#52617b}
+.receiptPopup .receiptList{display:grid;gap:7px;margin-top:18px;max-height:240px;overflow:auto}
+.receiptPopup .receiptRow{padding:10px 12px}
+.receiptPopup .receiptRow b{font-size:16px}
+.receiptPopup .total{font-size:32px;margin:18px 0 8px;color:#10224a}
+.receiptShowToRestaurant{text-align:center;font-size:14px;font-weight:900;color:#17358f;margin-bottom:4px}
+.receiptSkip{margin-top:12px}
+.receiptCloseBtn{border-radius:0 0 24px 24px;min-height:58px;font-size:17px}
+.receiptModalOpen{overflow:hidden}
+
+/* rev42: compact mobile monthly calendar */
+@media(max-width:800px){
+  .receiptModal{padding:10px}
+  .receiptModalPanel{max-height:calc(100dvh - 20px);border-radius:20px}
+  .receiptPopup{padding:20px 16px 14px}
+  .receiptSuccessMark{width:50px;height:50px;font-size:29px;margin-bottom:8px}
+  .receiptPopup h2{font-size:24px}
+  .receiptRestaurant{font-size:24px;margin-top:10px}
+  .receiptMeta{font-size:15px}
+  .receiptPopup .receiptList{max-height:210px;margin-top:14px}
+  .receiptPopup .total{font-size:29px;margin:14px 0 7px}
+  .receiptCloseBtn{min-height:56px}
+
+  .userCalendarLegend{gap:8px;margin:8px 0 6px;font-size:10px}
+  .calDot{width:7px;height:7px}
+  .userCalendarWeek{margin-bottom:3px}
+  .userCalendarWeek span{font-size:10px;padding:2px}
+  .userCalendarWeek,.userCalendarGrid{gap:2px}
+  .userCalCell{min-height:58px;padding:4px 3px;border-radius:7px}
+  .userCalDate{gap:2px}
+  .userCalDate b{font-size:11px}
+  .userCalStatus{margin-top:2px;font-size:7px;line-height:1.1}
+  .myMealChip{margin-top:3px;padding:2px 2px;border-radius:5px;text-align:center}
+  .myMealChip b{font-size:8px;line-height:1.1}
+  .userCalendarMsg{font-size:9px!important;margin-top:5px!important}
+  .userCalendarFootnote{margin-top:7px;padding-top:7px;font-size:9px;line-height:1.35}
+}
+
 </style>
 </head>
 <body>
@@ -1029,7 +1077,7 @@ html,body{max-width:100%;overflow-x:hidden}
       <div id="favInfo" class="muted small"></div>
       <div id="dayBlockNotice" class="err hidden"></div>
       <button id="registerBtn" type="button" class="btn full big" style="margin-top:14px">현재 인원 전체 식사 등록</button>
-      <div id="mealMsg"></div><div id="receipt" class="receipt hidden"></div>
+      <div id="mealMsg"></div>
     </div>
   </div>
 
@@ -1055,6 +1103,14 @@ html,body{max-width:100%;overflow-x:hidden}
   </div>
 </div>
 </section>
+
+<div id="receiptModal" class="receiptModal hidden" role="dialog" aria-modal="true" aria-labelledby="receiptTitle">
+  <div class="receiptModalBackdrop" data-receipt-close></div>
+  <div class="receiptModalPanel">
+    <div id="receipt" class="receipt receiptPopup"></div>
+    <button id="receiptCloseBtn" type="button" class="btn full big receiptCloseBtn">확인 / 닫기</button>
+  </div>
+</div>
 
 <section id="adminView" class="hidden" style="margin-top:14px">
 <div id="adminTabs" class="tabs"><button type="button" class="on" data-tab="dash">현황</button><button type="button" data-tab="users">직원관리</button><button type="button" data-tab="restaurants">식당·QR</button><button type="button" data-tab="records">식사기록·정산</button><button type="button" data-tab="settings">설정</button></div>
@@ -1341,7 +1397,21 @@ $("saveFavBtn").onclick=async function(){var j=await post({action:"save_preferen
 $("clearFavBtn").onclick=async function(){if(!confirm("저장된 동행자 목록을 비울까요?"))return;var j=await post({action:"save_preferences",token:token,companions:[],auto_load:$("autoLoad").checked});if(j.ok){savedCompanions=[];$("favInfo").textContent="저장된 동행자 0명";alert("저장목록을 비웠습니다.")}};
 $("autoLoad").onchange=async function(){await post({action:"save_preferences",token:token,companions:savedCompanions,auto_load:$("autoLoad").checked})};
 $("registerBtn").onclick=async function(){if(!restaurantId){msg("mealMsg","식당 QR로 접속해 주세요.",false);return}$("registerBtn").disabled=true;$("registerBtn").textContent="등록 중...";var j=await post({action:"register_meal",token:token,restaurant_id:restaurantId,participants:participants.map(function(p){return p.kind==="employee"?{kind:"employee",employee_id:p.employee_id,employee_no:p.employee_no}:{kind:"external",company:p.company,name:p.name}})});$("registerBtn").disabled=false;$("registerBtn").textContent="현재 인원 전체 식사 등록";if(!j.ok){msg("mealMsg",j.message,false);return}msg("mealMsg","",true);showReceipt(j);await loadRecent();await loadUserCalendar();if(user.role!=="USER")await loadDashboard()};
-function showReceipt(j){var rows=(j.registered||[]).map(function(x){return '<div class="receiptRow"><b>'+esc(x.name)+'</b><div class="muted small">'+esc(x.detail)+'</div></div>'}).join("");var skip=(j.skipped&&j.skipped.length)?'<div class="notice">제외: '+j.skipped.map(function(x){return esc(x.name)+" ("+esc(x.reason)+")"}).join(", ")+'</div>':"";$("receipt").innerHTML='<h2>✓ 식사 등록 완료</h2><div class="center"><b>'+esc(j.restaurant)+'</b> · '+esc(j.period_label)+' · '+esc(j.time)+'</div><div class="receiptList" style="margin-top:12px">'+rows+'</div><div class="total">총 '+Number(j.total||0)+'명 등록</div><div class="center muted small">식당에 이 화면을 보여주세요.</div>'+skip;$("receipt").classList.remove("hidden");$("receipt").scrollIntoView({behavior:"smooth",block:"center"})}
+function showReceipt(j){
+  var rows=(j.registered||[]).map(function(x){return '<div class="receiptRow"><b>'+esc(x.name)+'</b><div class="muted small">'+esc(x.detail)+'</div></div>'}).join("");
+  var skip=(j.skipped&&j.skipped.length)?'<div class="notice receiptSkip">제외: '+j.skipped.map(function(x){return esc(x.name)+" ("+esc(x.reason)+")"}).join(", ")+'</div>':"";
+  $("receipt").innerHTML='<div class="receiptSuccessMark">✓</div><h2 id="receiptTitle">식사 등록 완료</h2><div class="receiptRestaurant">'+esc(j.restaurant)+'</div><div class="receiptMeta">'+esc(j.period_label)+' · '+esc(j.time)+'</div><div class="receiptList">'+rows+'</div><div class="total">총 '+Number(j.total||0)+'명 등록</div><div class="receiptShowToRestaurant">식당에 이 화면을 보여주세요.</div>'+skip;
+  $("receiptModal").classList.remove("hidden");
+  document.body.classList.add("receiptModalOpen");
+  setTimeout(function(){$("receiptCloseBtn").focus()},0);
+}
+function closeReceipt(){
+  $("receiptModal").classList.add("hidden");
+  document.body.classList.remove("receiptModalOpen");
+}
+$("receiptCloseBtn").onclick=closeReceipt;
+Array.prototype.forEach.call(document.querySelectorAll("[data-receipt-close]"),function(x){x.onclick=closeReceipt});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!$("receiptModal").classList.contains("hidden"))closeReceipt()});
 async function loadRecent(){var j=await post({action:"recent",token:token});$("recentBody").innerHTML=j.ok&&j.records.length?j.records.map(function(r){return "<tr><td>"+esc(r.meal_date)+"</td><td>"+esc(String(r.meal_time).slice(0,8))+"</td><td>"+esc(r.restaurant_name)+"</td><td>"+esc(r.period_label)+"</td><td>"+esc(r.person_name)+"</td></tr>"}).join(""):'<tr><td colspan="5">등록내역이 없습니다.</td></tr>'}
 
 function shiftUserCalendarMonth(month,delta){
