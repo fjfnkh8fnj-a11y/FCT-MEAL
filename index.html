@@ -830,6 +830,55 @@ html,body{max-width:100%;overflow-x:hidden}
   .employeeListTable table{min-width:860px}
 }
 
+
+/* rev37: stacked login view + personal meal calendar */
+.userStack{display:grid;grid-template-columns:1fr;gap:12px}
+.userCalendarHead{align-items:flex-end}
+.userCalendarControls{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex:0 0 auto}
+.userCalendarControls input{width:165px;min-height:40px}
+.userCalendarControls button{min-width:42px}
+.userCalendarLegend{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0 10px;font-size:12px;color:var(--sub)}
+.userCalendarLegend span{display:flex;align-items:center;gap:5px}
+.calDot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#d8e0ea}
+.calDot.allow{background:#dff5e8;border:1px solid #86c99d}
+.calDot.blocked{background:#ffe1de;border:1px solid #e8a19b}
+.calDot.override{background:#fff0bf;border:1px solid #e6c259}
+.calDot.eaten{background:#dfeaff;border:1px solid #7fa2ea}
+.userCalendarWeek,.userCalendarGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.userCalendarWeek{margin-bottom:6px}
+.userCalendarWeek span{text-align:center;font-size:12px;font-weight:800;color:#667085;padding:5px}
+.userCalendarWeek span:first-child{color:#c13a31}.userCalendarWeek span:last-child{color:#2866b1}
+.userCalCell{min-height:112px;border:1px solid #e3e8f0;border-radius:12px;padding:9px;background:#fff;overflow:hidden}
+.userCalCell.empty{background:transparent;border-color:transparent}
+.userCalCell.blocked{background:#fff7f6}
+.userCalCell.hasOverride{box-shadow:inset 0 0 0 1px #e8c65e}
+.userCalCell.today{outline:2px solid #17358f;outline-offset:-2px}
+.userCalCell.hasMeal{border-color:#9bb5ea}
+.userCalDate{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.userCalDate b{font-size:14px}.userCalDate span{font-size:10px;color:#8a96aa}
+.userCalCell.sun .userCalDate b,.userCalCell.holiday .userCalDate b{color:#c33d34}
+.userCalCell.sat .userCalDate b{color:#2866b1}
+.userCalStatus{margin-top:6px;font-size:10px;font-weight:800;color:#5f6d84;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.userCalCell.blocked .userCalStatus{color:#b42318}
+.userCalCell.hasOverride .userCalStatus{color:#8a6200}
+.userCalNote{font-size:9px;color:#7a6540;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.myMealChip{margin-top:6px;padding:5px 6px;border-radius:8px;background:#edf3ff;border:1px solid #cad9f5;line-height:1.25}
+.myMealChip b{display:block;font-size:10px;color:#183f94}
+.myMealChip span{display:block;font-size:9px;color:#5d6c85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+@media(max-width:800px){
+  .userCalendarHead{align-items:stretch}
+  .userCalendarControls{width:100%;justify-content:stretch}
+  .userCalendarControls input{flex:1;width:auto}
+  .userCalendarWeek,.userCalendarGrid{gap:3px}
+  .userCalCell{min-height:82px;padding:6px;border-radius:9px}
+  .userCalDate span{display:none}
+  .userCalStatus{font-size:8px}
+  .userCalNote{display:none}
+  .myMealChip{padding:4px;margin-top:4px}
+  .myMealChip b{font-size:9px}
+  .myMealChip span{display:none}
+}
+
 </style>
 </head>
 <body>
@@ -922,31 +971,52 @@ html,body{max-width:100%;overflow-x:hidden}
 </section>
 
 <section id="userView" class="hidden">
-<div class="grid g2">
-<div class="card">
-<div class="row"><div><h2>식사 등록</h2><div id="identity" class="muted"></div></div><button id="logoutBtn" type="button" class="btn2 auto">로그아웃</button></div>
-<div id="noQr" class="notice hidden">식사 등록은 식당에 부착된 QR을 스캔해 접속해 주세요.</div>
-<div id="mealBox" class="hidden">
-<div class="person"><div class="info"><b id="restaurantName"></b><span class="muted small">QR로 자동 인식된 식당</span></div><span class="tag">고정 QR</span></div>
-<div class="sep"></div>
-<h3>같이 식사하는 사람</h3>
-<div class="notice">본인은 자동 포함됩니다. 직원은 이름 또는 사번으로 검색해서 추가할 수 있습니다.</div>
-<label>직원 검색</label>
-<div class="row"><input id="employeeSearch" placeholder="이름 또는 사번"><button id="searchBtn" type="button" class="btn2 auto">검색</button></div>
-<div id="searchResults" class="searchResults"></div>
-<div id="externalBlock" class="hidden">
-<label>외부업체 엔지니어 추가</label>
-<div class="row mobile"><input id="extCompany" placeholder="업체명"><input id="extName" placeholder="이름"><button id="addExternalBtn" type="button" class="btn2 auto">추가</button></div>
-</div>
-<div id="participants"></div>
-<div class="row" style="margin-top:10px"><button id="saveFavBtn" type="button" class="btn2">현재 동행자 저장</button><button id="clearFavBtn" type="button" class="btn2">저장목록 비우기</button></div>
-<label style="display:flex;align-items:center;gap:8px;font-weight:700"><input id="autoLoad" type="checkbox" style="width:auto;min-height:0" checked> QR 접속 시 저장된 동행자 자동 불러오기</label>
-<div id="favInfo" class="muted small"></div>
-<div id="dayBlockNotice" class="err hidden"></div><button id="registerBtn" type="button" class="btn full big" style="margin-top:14px">현재 인원 전체 식사 등록</button>
-<div id="mealMsg"></div><div id="receipt" class="receipt hidden"></div>
-</div>
-</div>
-<div class="card"><h2>최근 등록내역</h2><div class="table"><table><thead><tr><th>일자</th><th>시간</th><th>식당</th><th>식사</th><th>대상</th></tr></thead><tbody id="recentBody"></tbody></table></div></div>
+<div class="userStack">
+  <div class="card">
+    <div class="row"><div><h2>식사 등록</h2><div id="identity" class="muted"></div></div><button id="logoutBtn" type="button" class="btn2 auto">로그아웃</button></div>
+    <div id="noQr" class="notice hidden">식사 등록은 식당에 부착된 QR을 스캔해 접속해 주세요.</div>
+    <div id="mealBox" class="hidden">
+      <div class="person"><div class="info"><b id="restaurantName"></b><span class="muted small">QR로 자동 인식된 식당</span></div><span class="tag">고정 QR</span></div>
+      <div class="sep"></div>
+      <h3>같이 식사하는 사람</h3>
+      <div class="notice">본인은 자동 포함됩니다. 직원은 이름 또는 사번으로 검색해서 추가할 수 있습니다.</div>
+      <label>직원 검색</label>
+      <div class="row"><input id="employeeSearch" placeholder="이름 또는 사번"><button id="searchBtn" type="button" class="btn2 auto">검색</button></div>
+      <div id="searchResults" class="searchResults"></div>
+      <div id="externalBlock" class="hidden">
+        <label>외부업체 엔지니어 추가</label>
+        <div class="row mobile"><input id="extCompany" placeholder="업체명"><input id="extName" placeholder="이름"><button id="addExternalBtn" type="button" class="btn2 auto">추가</button></div>
+      </div>
+      <div id="participants"></div>
+      <div class="row" style="margin-top:10px"><button id="saveFavBtn" type="button" class="btn2">현재 동행자 저장</button><button id="clearFavBtn" type="button" class="btn2">저장목록 비우기</button></div>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:700"><input id="autoLoad" type="checkbox" style="width:auto;min-height:0" checked> QR 접속 시 저장된 동행자 자동 불러오기</label>
+      <div id="favInfo" class="muted small"></div>
+      <div id="dayBlockNotice" class="err hidden"></div>
+      <button id="registerBtn" type="button" class="btn full big" style="margin-top:14px">현재 인원 전체 식사 등록</button>
+      <div id="mealMsg"></div><div id="receipt" class="receipt hidden"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row"><div><h2 style="margin:0">최근 등록내역</h2><p class="muted small" style="margin:4px 0 0">내 계정으로 등록한 최근 식사내역입니다.</p></div></div>
+    <div class="table" style="margin-top:12px"><table><thead><tr><th>일자</th><th>시간</th><th>식당</th><th>식사</th><th>대상</th></tr></thead><tbody id="recentBody"></tbody></table></div>
+  </div>
+
+  <div class="card">
+    <div class="row userCalendarHead">
+      <div><h2 style="margin:0">식사 운영 달력</h2><p class="muted small" style="margin:4px 0 0">회사 식사 운영일정과 내가 식사한 날짜를 함께 확인합니다.</p></div>
+      <div class="userCalendarControls"><button id="userCalPrev" type="button" class="btn2 auto" aria-label="이전 달">‹</button><input id="userCalMonth" type="month"><button id="userCalNext" type="button" class="btn2 auto" aria-label="다음 달">›</button></div>
+    </div>
+    <div class="userCalendarLegend">
+      <span><i class="calDot allow"></i>식사가능</span>
+      <span><i class="calDot blocked"></i>식사불가/휴무</span>
+      <span><i class="calDot override"></i>관리자 지정</span>
+      <span><i class="calDot eaten"></i>내 식사기록</span>
+    </div>
+    <div class="userCalendarWeek"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+    <div id="userCalendarGrid" class="userCalendarGrid"></div>
+    <div id="userCalendarMsg" class="muted small" style="margin-top:8px"></div>
+  </div>
 </div>
 </section>
 
@@ -1217,7 +1287,7 @@ $("identity").innerHTML="<b>"+esc(user.name)+"</b> · "+esc(user.department)+" �
 if(restaurant){$("restaurantName").textContent=restaurant.name;$("mealBox").classList.remove("hidden");$("noQr").classList.add("hidden")}else{$("mealBox").classList.add("hidden");$("noQr").classList.remove("hidden")}
 $("externalBlock").classList.toggle("hidden",!(user.worker_type==="ENGINEER"||user.role!=="USER"));
 $("adminView").classList.toggle("hidden",user.role==="USER");$("pinChangeNotice").classList.toggle("hidden",!user.pin_must_change);
-await loadPrefs();renderParticipants();if(restaurant)await loadTodayCalendarStatus();await loadRecent();if(user.role!=="USER")await loadDashboard()
+if(!$("userCalMonth").value)$("userCalMonth").value=todayKst().slice(0,7);await loadPrefs();renderParticipants();if(restaurant)await loadTodayCalendarStatus();await loadRecent();await loadUserCalendar();if(user.role!=="USER")await loadDashboard()
 }
 async function loadTodayCalendarStatus(){var j=await post({action:"calendar_today",token:token});if(!j.ok||!j.calendar)return;var cal=j.calendar,notice=$("dayBlockNotice");if(cal.blocked){notice.textContent="오늘은 "+(cal.reason||"휴무일")+"로 식사 등록이 불가합니다.";notice.classList.remove("hidden");$("registerBtn").disabled=true;$("registerBtn").textContent="오늘은 식사 등록 불가"}else{notice.classList.add("hidden");notice.textContent="";$("registerBtn").disabled=false;$("registerBtn").textContent="현재 인원 전체 식사 등록"}}
 async function loadPrefs(){var j=await post({action:"get_preferences",token:token});if(j.ok){savedCompanions=j.companions||[];$("autoLoad").checked=j.auto_load!==false;$("favInfo").textContent="저장된 동행자 "+savedCompanions.length+"명";if(restaurant&&$("autoLoad").checked)participants=savedCompanions.map(function(x){return JSON.parse(JSON.stringify(x))})}}
@@ -1228,9 +1298,48 @@ $("addExternalBtn").onclick=function(){var c=$("extCompany").value.trim(),n=$("e
 $("saveFavBtn").onclick=async function(){var j=await post({action:"save_preferences",token:token,companions:participants,auto_load:$("autoLoad").checked});alert(j.message||"저장 완료");if(j.ok){savedCompanions=participants.map(function(x){return JSON.parse(JSON.stringify(x))});$("favInfo").textContent="저장된 동행자 "+savedCompanions.length+"명"}};
 $("clearFavBtn").onclick=async function(){if(!confirm("저장된 동행자 목록을 비울까요?"))return;var j=await post({action:"save_preferences",token:token,companions:[],auto_load:$("autoLoad").checked});if(j.ok){savedCompanions=[];$("favInfo").textContent="저장된 동행자 0명";alert("저장목록을 비웠습니다.")}};
 $("autoLoad").onchange=async function(){await post({action:"save_preferences",token:token,companions:savedCompanions,auto_load:$("autoLoad").checked})};
-$("registerBtn").onclick=async function(){if(!restaurantId){msg("mealMsg","식당 QR로 접속해 주세요.",false);return}$("registerBtn").disabled=true;$("registerBtn").textContent="등록 중...";var j=await post({action:"register_meal",token:token,restaurant_id:restaurantId,participants:participants.map(function(p){return p.kind==="employee"?{kind:"employee",employee_id:p.employee_id,employee_no:p.employee_no}:{kind:"external",company:p.company,name:p.name}})});$("registerBtn").disabled=false;$("registerBtn").textContent="현재 인원 전체 식사 등록";if(!j.ok){msg("mealMsg",j.message,false);return}msg("mealMsg","",true);showReceipt(j);await loadRecent();if(user.role!=="USER")await loadDashboard()};
+$("registerBtn").onclick=async function(){if(!restaurantId){msg("mealMsg","식당 QR로 접속해 주세요.",false);return}$("registerBtn").disabled=true;$("registerBtn").textContent="등록 중...";var j=await post({action:"register_meal",token:token,restaurant_id:restaurantId,participants:participants.map(function(p){return p.kind==="employee"?{kind:"employee",employee_id:p.employee_id,employee_no:p.employee_no}:{kind:"external",company:p.company,name:p.name}})});$("registerBtn").disabled=false;$("registerBtn").textContent="현재 인원 전체 식사 등록";if(!j.ok){msg("mealMsg",j.message,false);return}msg("mealMsg","",true);showReceipt(j);await loadRecent();await loadUserCalendar();if(user.role!=="USER")await loadDashboard()};
 function showReceipt(j){var rows=(j.registered||[]).map(function(x){return '<div class="receiptRow"><b>'+esc(x.name)+'</b><div class="muted small">'+esc(x.detail)+'</div></div>'}).join("");var skip=(j.skipped&&j.skipped.length)?'<div class="notice">제외: '+j.skipped.map(function(x){return esc(x.name)+" ("+esc(x.reason)+")"}).join(", ")+'</div>':"";$("receipt").innerHTML='<h2>✓ 식사 등록 완료</h2><div class="center"><b>'+esc(j.restaurant)+'</b> · '+esc(j.period_label)+' · '+esc(j.time)+'</div><div class="receiptList" style="margin-top:12px">'+rows+'</div><div class="total">총 '+Number(j.total||0)+'명 등록</div><div class="center muted small">식당에 이 화면을 보여주세요.</div>'+skip;$("receipt").classList.remove("hidden");$("receipt").scrollIntoView({behavior:"smooth",block:"center"})}
 async function loadRecent(){var j=await post({action:"recent",token:token});$("recentBody").innerHTML=j.ok&&j.records.length?j.records.map(function(r){return "<tr><td>"+esc(r.meal_date)+"</td><td>"+esc(String(r.meal_time).slice(0,8))+"</td><td>"+esc(r.restaurant_name)+"</td><td>"+esc(r.period_label)+"</td><td>"+esc(r.person_name)+"</td></tr>"}).join(""):'<tr><td colspan="5">등록내역이 없습니다.</td></tr>'}
+
+function shiftUserCalendarMonth(month,delta){
+  var p=String(month||todayKst().slice(0,7)).split("-"),d=new Date(Number(p[0]),Number(p[1])-1+delta,1);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+}
+function renderUserCalendar(days,meals){
+  var grid=$("userCalendarGrid"),month=$("userCalMonth").value||todayKst().slice(0,7);
+  var mealMap={};
+  (meals||[]).forEach(function(m){(mealMap[m.meal_date]||(mealMap[m.meal_date]=[])).push(m)});
+  var first=new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-1,1).getDay();
+  var html="";
+  for(var i=0;i<first;i++)html+='<div class="userCalCell empty"></div>';
+  (days||[]).forEach(function(d){
+    var own=mealMap[d.date]||[],today=d.date===todayKst(),cls=["userCalCell"];
+    if(d.blocked)cls.push("blocked");else cls.push("allowed");
+    if(d.override_mode)cls.push("hasOverride");
+    if(d.holiday_label)cls.push("holiday");
+    if(d.sunday)cls.push("sun");
+    if(d.saturday)cls.push("sat");
+    if(today)cls.push("today");
+    if(own.length)cls.push("hasMeal");
+    var status=d.override_mode==="ALLOW"?"식사가능":d.override_mode==="BLOCK"?"식사불가":d.blocked?(d.holiday_label||d.reason||"식사불가"):"식사가능";
+    var note=d.note?'<div class="userCalNote">'+esc(d.note)+'</div>':"";
+    var mealsHtml=own.map(function(m){return '<div class="myMealChip" title="'+esc(m.restaurant_name+" · "+m.period_label)+'"><b>'+esc(m.period_label)+'</b><span>'+esc(m.restaurant_name)+'</span></div>';}).join("");
+    html+='<div class="'+cls.join(" ")+'"><div class="userCalDate"><b>'+Number(d.date.slice(-2))+'</b><span>'+esc(d.weekday)+'</span></div><div class="userCalStatus">'+esc(status)+'</div>'+note+mealsHtml+'</div>';
+  });
+  grid.innerHTML=html;
+  $("userCalendarMsg").textContent=month.replace("-","년 ")+"월 · 내 식사 "+(meals||[]).length+"건";
+}
+async function loadUserCalendar(){
+  var month=$("userCalMonth").value||todayKst().slice(0,7);$("userCalMonth").value=month;
+  var pair=await Promise.all([post({action:"calendar_month",token:token,month:month}),post({action:"my_monthly_meals",token:token,month:month})]);
+  if(!pair[0].ok||!pair[1].ok){$("userCalendarMsg").textContent=pair[0].message||pair[1].message||"달력을 불러오지 못했습니다.";return}
+  renderUserCalendar(pair[0].days||[],pair[1].meals||[]);
+}
+$("userCalMonth").onchange=loadUserCalendar;
+$("userCalPrev").onclick=function(){$("userCalMonth").value=shiftUserCalendarMonth($("userCalMonth").value,-1);loadUserCalendar()};
+$("userCalNext").onclick=function(){$("userCalMonth").value=shiftUserCalendarMonth($("userCalMonth").value,1);loadUserCalendar()};
+
 
 Array.prototype.forEach.call($("adminTabs").querySelectorAll("[data-tab]"),function(b){b.onclick=function(){adminTab(b.getAttribute("data-tab"))}});
 function adminTab(n){Array.prototype.forEach.call($("adminTabs").querySelectorAll("[data-tab]"),function(b){b.classList.toggle("on",b.getAttribute("data-tab")===n)});Array.prototype.forEach.call(document.querySelectorAll(".adminPanel"),function(p){p.classList.remove("on")});$("tab-"+n).classList.add("on");if(n==="users"){loadUsers();loadAdminDepartments();}if(n==="restaurants")loadRestaurants();if(n==="records"){loadManualRegistrationOptions();loadMonthlySummary();loadRecords();}if(n==="settings"){loadPeriods();loadCalendarSettings()}}
