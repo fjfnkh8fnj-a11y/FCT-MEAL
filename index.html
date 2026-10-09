@@ -28,7 +28,7 @@ label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}input,selec
 .tabs{display:flex;gap:8px;overflow:auto;padding-bottom:8px;margin-bottom:12px;-webkit-overflow-scrolling:touch}.tabs button{white-space:nowrap;border:1px solid var(--line);background:white;border-radius:10px;padding:10px 13px;font-weight:800}.tabs button.on{background:var(--b);color:white}.adminPanel{display:none}.adminPanel.on{display:block}.vendorPanel{display:none}.vendorPanel.on{display:block}
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.kpi{background:white;border:1px solid var(--line);border-radius:14px;padding:14px}.kpi b{display:block;font-size:22px;margin-top:3px}
 .table{overflow:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch}.table table{border-collapse:collapse;width:100%;min-width:780px}.table th,.table td{padding:10px 11px;border-bottom:1px solid #edf0f4;font-size:12px;text-align:left;white-space:nowrap}.table th{background:#f8fafc}
-.qrcard{border:1px solid var(--line);border-radius:14px;padding:14px;background:white}.qrimg{display:block;width:190px;height:190px;max-width:100%;margin:12px auto;background:white}
+.qrcard{border:1px solid var(--line);border-radius:14px;padding:14px;background:white}.qr.qrimg{display:block;width:190px;height:190px;max-width:100%;margin:12px auto;background:white}
 .sep{height:1px;background:var(--line);margin:16px 0}.priceGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.periodRow{display:grid;grid-template-columns:100px 80px 1fr 1fr;gap:8px;align-items:end;border-bottom:1px solid #edf0f4;padding:10px 0}
 .monthlyWrap{margin-top:12px}.monthlyTitle{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.monthlyTable table{min-width:1650px}.monthlyTable th,.monthlyTable td{text-align:center}.day-sat{background:#eef6ff!important;color:#1557a0!important}.day-sun,.day-holiday{background:#fff0f0!important;color:#b42318!important}.day-blocked{background:#fff8e8!important;color:#8a5a00!important}.calendarRule{min-width:980px}.calendarRule input,.calendarRule select{min-height:36px;padding:6px 8px;font-size:13px}.calendarRule td{vertical-align:middle}.monthlyTable th:nth-child(2),.monthlyTable th:nth-child(3),.monthlyTable td:nth-child(2),.monthlyTable td:nth-child(3){text-align:left}.statbar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.statbox{border:1px solid var(--line);border-radius:12px;padding:10px;background:#f8fafc}.statbox b{display:block;font-size:20px;margin-top:3px}
 .siteFooter{border-top:1px solid #e4eaf2;background:#fff;margin-top:20px;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
@@ -108,33 +108,122 @@ input:focus,select:focus{outline:0;border-color:#7aa4ed;box-shadow:0 0 0 4px rgb
   .footerInner img{width:145px}
 }
 
+
+/* rev20 logo clipping fix + FCT corporate login */
+header{overflow:visible}
+.head{min-height:58px}
+.brandCluster{overflow:visible}
+.brandLogo{
+  display:block!important;
+  width:auto!important;
+  height:46px!important;
+  max-width:min(360px,54vw)!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+}
+.authLogo{
+  width:auto!important;
+  height:72px!important;
+  max-width:100%!important;
+  max-height:none!important;
+  margin:0 auto 12px!important;
+  object-position:center!important;
+}
+.siteFooter{overflow:visible}
+.footerInner img{
+  display:block!important;
+  width:auto!important;
+  height:30px!important;
+  max-width:220px!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  object-fit:contain!important;
+}
+.auth{max-width:1120px;margin:42px auto 70px}
+.authShell{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(430px,.92fr);min-height:600px;border-radius:26px;overflow:hidden;box-shadow:0 28px 80px rgba(15,46,112,.16);background:#fff;border:1px solid #e4eaf3}
+.authVisual{position:relative;min-height:600px;background:
+  linear-gradient(135deg,rgba(10,39,103,.92),rgba(20,70,170,.72)),
+  url("https://fctc.co.kr/img/sub2/product_img1.jpg") center/cover no-repeat,
+  linear-gradient(135deg,#0f2f78,#1c5bc3);overflow:hidden}
+.authVisual:before{content:"";position:absolute;inset:auto -90px -110px auto;width:360px;height:360px;border:1px solid rgba(255,255,255,.16);border-radius:50%}
+.authVisual:after{content:"";position:absolute;left:-70px;top:-80px;width:280px;height:280px;border:1px solid rgba(255,255,255,.12);border-radius:50%}
+.authVisualOverlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,23,67,.04),rgba(5,23,67,.28))}
+.authVisualContent{position:absolute;left:46px;right:42px;bottom:48px;color:#fff;z-index:2}
+.authVisualContent .eyebrow{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.14em;border:1px solid rgba(255,255,255,.34);background:rgba(255,255,255,.10);padding:7px 10px;border-radius:999px;margin-bottom:18px}
+.authVisualContent h1{color:#fff;font-size:34px;line-height:1.3;letter-spacing:-.04em;margin:0 0 16px;text-shadow:0 3px 18px rgba(0,0,0,.22)}
+.authVisualContent p{margin:0;color:rgba(255,255,255,.88);line-height:1.75;font-size:14px}
+.visualValues{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
+.visualValues span{font-size:11px;font-weight:800;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.18)}
+.authCard{border:0!important;border-radius:0!important;box-shadow:none!important;padding:38px 38px 34px!important;display:flex;flex-direction:column;justify-content:center}
+.authBrand{padding-top:0}
+@media(max-width:800px){
+  .head{min-height:46px}
+  .brandLogo{height:32px!important;max-width:58vw!important}
+  .auth{margin:14px auto 42px}
+  .authShell{display:block;min-height:0;border-radius:20px;overflow:hidden}
+  .authVisual{min-height:190px;background-position:center}
+  .authVisualContent{left:20px;right:18px;bottom:20px}
+  .authVisualContent .eyebrow{font-size:9px;margin-bottom:10px;padding:5px 8px}
+  .authVisualContent h1{font-size:21px;line-height:1.32;margin-bottom:8px}
+  .authVisualContent p{font-size:11px;line-height:1.45}
+  .visualValues{display:none}
+  .authCard{padding:22px 16px 24px!important}
+  .authLogo{height:54px!important;max-width:92%!important}
+  .footerInner img{height:24px!important;max-width:180px!important}
+}
+
 </style>
 </head>
 <body>
-<header><div class="head"><div class="brandCluster"><img class="brandLogo" src="./assets/fct-logo.png?rev=19" alt="FCT (주) 화인세라텍"><div class="brandTitle"><b>식사관리 시스템</b><span>FCT Meal Management</span></div></div><div id="who" class="who">로그인 전</div></div></header>
+<header><div class="head"><div class="brandCluster"><img class="brandLogo" src="./assets/fct-logo.png?rev=20" alt="FCT (주) 화인세라텍"><div class="brandTitle"><b>식사관리 시스템</b><span>FCT Meal Management</span></div></div><div id="who" class="who">로그인 전</div></div></header>
 <main>
 <section id="authView" class="auth">
-<div class="card authCard"><div class="authBrand"><img class="brandLogo authLogo" src="./assets/fct-logo.png?rev=19" alt="FCT (주) 화인세라텍"><h1>식사관리 시스템</h1><p>FCT Meal Management</p></div>
-<div class="switch"><button id="loginTab" class="on" type="button">직원 로그인</button><button id="signupTab" type="button">회원가입</button><button id="vendorLoginTab" type="button">식당 로그인</button></div>
-<div id="restaurantHint" class="notice hidden"></div>
-<div id="loginForm">
-<h2>사번 로그인</h2><p class="muted">일반 직원은 사번만 입력하면 됩니다.</p>
-<label>사번</label><input id="loginNo" autocomplete="username" placeholder="사번 입력">
-<div id="pinRow" class="hidden"><label>마스터 PIN</label><input id="loginPin" inputmode="numeric" type="password" placeholder="PIN 입력"></div>
-<button id="loginBtn" type="button" class="btn full big" style="margin-top:12px">로그인</button><div id="loginMsg"></div>
-</div>
-<div id="signupForm" class="hidden">
-<h2>회원가입</h2>
-<div class="row mobile"><div><label>이름</label><input id="suName"></div><div><label>사번</label><input id="suNo"></div></div>
-<label>부서</label><select id="suDept"><option>품질</option><option>박막</option><option>전반</option><option>가공</option><option>소성</option><option>경영지원</option></select>
-<label>구분</label><select id="suType"><option value="OP">OP</option><option value="ENGINEER">엔지니어</option></select>
-<button id="signupBtn" type="button" class="btn full big" style="margin-top:12px">회원가입</button><div id="signupMsg"></div>
-</div>
-<div id="vendorLoginForm" class="hidden">
-<h2>식당 로그인</h2><p class="muted">등록된 식당 ID로 본인 식당의 월간 집계만 조회할 수 있습니다.</p>
-<label>식당 ID</label><input id="vendorCode" autocomplete="username" placeholder="식당 ID 입력">
-<button id="vendorLoginBtn" type="button" class="btn full big" style="margin-top:12px">식당 로그인</button><div id="vendorLoginMsg"></div>
-</div>
+<div class="authShell">
+  <div class="authVisual">
+    <div class="authVisualOverlay"></div>
+    <div class="authVisualContent">
+      <span class="eyebrow">FCT · FINE CERATECH</span>
+      <h1>세라믹 소재 기술력을 바탕으로<br>혁신을 선도하는 기업</h1>
+      <p>반도체 Wafer 검사장비 Probe Card용<br>다층 세라믹 기판(MLC)을 개발·생산합니다.</p>
+      <div class="visualValues">
+        <span>창의와 도전</span><span>변화와 혁신</span><span>신뢰와 존중</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card authCard">
+    <div class="authBrand">
+      <img class="brandLogo authLogo" src="./assets/fct-logo.png?rev=20" alt="FCT (주) 화인세라텍">
+      <h1>식사관리 시스템</h1>
+      <p>FCT Meal Management</p>
+    </div>
+    <div class="switch"><button id="loginTab" class="on" type="button">직원 로그인</button><button id="signupTab" type="button">회원가입</button><button id="vendorLoginTab" type="button">식당 로그인</button></div>
+    <div id="restaurantHint" class="notice hidden"></div>
+    <div id="loginForm">
+      <h2>사번 로그인</h2><p class="muted">일반 직원은 사번만 입력하면 됩니다.</p>
+      <label>사번</label><input id="loginNo" autocomplete="username" placeholder="사번 입력">
+      <div id="pinRow" class="hidden"><label>마스터 PIN</label><input id="loginPin" inputmode="numeric" type="password" placeholder="PIN 입력"></div>
+      <button id="loginBtn" type="button" class="btn full big" style="margin-top:12px">로그인</button><div id="loginMsg"></div>
+    </div>
+    <div id="signupForm" class="hidden">
+      <h2>회원가입</h2>
+      <div class="row mobile"><div><label>이름</label><input id="suName"></div><div><label>사번</label><input id="suNo"></div></div>
+      <label>부서</label><select id="suDept"><option>품질</option><option>박막</option><option>전반</option><option>가공</option><option>소성</option><option>경영지원</option></select>
+      <label>구분</label><select id="suType"><option value="OP">OP</option><option value="ENGINEER">엔지니어</option></select>
+      <button id="signupBtn" type="button" class="btn full big" style="margin-top:12px">회원가입</button><div id="signupMsg"></div>
+    </div>
+    <div id="vendorLoginForm" class="hidden">
+      <h2>식당 로그인</h2><p class="muted">등록된 식당 ID로 본인 식당의 월간 집계만 조회할 수 있습니다.</p>
+      <label>식당 ID</label><input id="vendorCode" autocomplete="username" placeholder="식당 ID 입력">
+      <button id="vendorLoginBtn" type="button" class="btn full big" style="margin-top:12px">식당 로그인</button><div id="vendorLoginMsg"></div>
+    </div>
+  </div>
 </div>
 </section>
 
@@ -264,8 +353,8 @@ input:focus,select:focus{outline:0;border-color:#7aa4ed;box-shadow:0 0 0 4px rgb
 </main>
 <footer class="siteFooter">
   <div class="footerInner">
-    <img src="./assets/fct-logo.png?rev=19" alt="FCT (주) 화인세라텍">
-    <div><b>FCT 식사관리 시스템</b><span>FINE CERATECH · Meal Management</span></div>
+    <img src="./assets/fct-logo.png?rev=20" alt="FCT (주) 화인세라텍">
+    <div><b>FCT 식사관리 시스템</b><span>COPYRIGHT ⓒ 2021 FCT. ALL RIGHTS RESERVED.</span></div>
   </div>
 </footer>
 
