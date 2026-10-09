@@ -377,6 +377,55 @@ header{min-height:78px!important;overflow:visible!important}
   }
 }
 
+
+/* rev25: homepage-style 3-slide auto hero */
+.authVisual{isolation:isolate}
+.authSlideBg{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  opacity:0!important;
+  transition:opacity .55s ease!important;
+  background-image:url("https://cdn.sisajournal-e.com/news/photo/202311/305454_130352_4926.jpg")!important;
+  background-repeat:no-repeat!important;
+  background-size:cover!important;
+  filter:contrast(1.22) saturate(1.18) brightness(.88)!important;
+}
+.authSlideBg.on{opacity:1!important}
+.authSlideBg.slide1{background-position:center!important;transform:scale(1.005)!important}
+.authSlideBg.slide2{background-position:42% center!important;transform:scale(1.055)!important}
+.authSlideBg.slide3{background-position:58% center!important;transform:scale(1.09)!important}
+.heroDots{
+  position:absolute;
+  left:50%;
+  bottom:18px;
+  z-index:4;
+  transform:translateX(-50%);
+  display:flex;
+  gap:8px;
+}
+.heroDots button{
+  width:8px;
+  height:8px;
+  min-width:0;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.45);
+  box-shadow:0 0 0 1px rgba(0,0,0,.08);
+  cursor:pointer;
+}
+.heroDots button.on{
+  width:24px;
+  border-radius:999px;
+  background:#fff;
+}
+@media(max-width:800px){
+  .heroDots{bottom:10px}
+  .heroDots button{width:7px;height:7px}
+  .heroDots button.on{width:20px}
+}
+
 </style>
 </head>
 <body>
@@ -385,13 +434,17 @@ header{min-height:78px!important;overflow:visible!important}
 <section id="authView" class="auth">
 <div class="authShell">
   <div class="authVisual">
-    <div class="authPhoto" aria-hidden="true"></div>
+    <div class="authPhoto authSlideBg slide1 on" aria-hidden="true"></div>
+    <div class="authPhoto authSlideBg slide2" aria-hidden="true"></div>
+    <div class="authPhoto authSlideBg slide3" aria-hidden="true"></div>
     <div class="authVisualOverlay"></div>
     <div class="authVisualContent">
-      <h1>세라믹 소재 기술력을 바탕으로 혁신을 선도하는 기업</h1>
+      <h1 id="heroSlideText">세라믹 소재 기술력을 바탕으로 혁신을 선도하는 기업</h1>
     </div>
-    <div class="visualValues">
-      <span>창의와 도전</span><span>변화와 혁신</span><span>신뢰와 존중</span>
+    <div class="heroDots" aria-label="메인 배너 선택">
+      <button type="button" class="on" data-hero="0" aria-label="1번 배너"></button>
+      <button type="button" data-hero="1" aria-label="2번 배너"></button>
+      <button type="button" data-hero="2" aria-label="3번 배너"></button>
     </div>
   </div>
 
@@ -571,6 +624,27 @@ function setToken(v){token=v||"";try{if(token)localStorage.setItem("fct_meal_tok
 function setVendorToken(v){vendorToken=v||"";try{if(vendorToken)localStorage.setItem("fct_vendor_token",vendorToken);else localStorage.removeItem("fct_vendor_token")}catch(e){}}
 function authMode(m){$("loginForm").classList.toggle("hidden",m!=="login");$("signupForm").classList.toggle("hidden",m!=="signup");$("vendorLoginForm").classList.toggle("hidden",m!=="vendor");$("loginTab").classList.toggle("on",m==="login");$("signupTab").classList.toggle("on",m==="signup");$("vendorLoginTab").classList.toggle("on",m==="vendor")}
 $("loginTab").onclick=function(){authMode("login")};$("signupTab").onclick=function(){authMode("signup")};$("vendorLoginTab").onclick=function(){authMode("vendor")};
+var heroSlides=[
+  "세라믹 소재 기술력을 바탕으로 혁신을 선도하는 기업",
+  "반도체 세라믹 부품 시장을 선도하는 기업",
+  "다층 세라믹 기판 분야의 글로벌 강소기업"
+],heroIndex=0,heroTimer=null;
+function showHeroSlide(n){
+  heroIndex=(n+heroSlides.length)%heroSlides.length;
+  var textEl=$("heroSlideText");
+  if(textEl)textEl.textContent=heroSlides[heroIndex];
+  Array.prototype.forEach.call(document.querySelectorAll(".authSlideBg"),function(el,i){el.classList.toggle("on",i===heroIndex)});
+  Array.prototype.forEach.call(document.querySelectorAll(".heroDots button"),function(el,i){el.classList.toggle("on",i===heroIndex)});
+}
+function startHeroSlider(){
+  if(heroTimer)clearInterval(heroTimer);
+  heroTimer=setInterval(function(){showHeroSlide(heroIndex+1)},1000);
+}
+Array.prototype.forEach.call(document.querySelectorAll(".heroDots button"),function(b){
+  b.onclick=function(){showHeroSlide(Number(b.getAttribute("data-hero")||0));startHeroSlider()}
+});
+startHeroSlider();
+
 async function loadRestaurant(){if(!restaurantId)return;var j=await post({action:"restaurant_public",restaurant_id:restaurantId});if(j.ok){restaurant=j.restaurant;$("restaurantHint").classList.remove("hidden");$("restaurantHint").textContent="현재 식당: "+restaurant.name}}
 $("signupBtn").onclick=async function(){var j=await post({action:"signup",employee_no:$("suNo").value,name:$("suName").value,department:$("suDept").value,worker_type:$("suType").value});msg("signupMsg",j.message,j.ok);if(j.ok){$("loginNo").value=$("suNo").value;authMode("login")}};
 $("loginBtn").onclick=async function(){var j=await post({action:"login",employee_no:$("loginNo").value,pin:$("loginPin").value});if(j.requires_pin){$("pinRow").classList.remove("hidden");msg("loginMsg",j.message,false);return}if(!j.ok){msg("loginMsg",j.message,false);return}setVendorToken("");setToken(j.token);user=j.user;await enter()};
