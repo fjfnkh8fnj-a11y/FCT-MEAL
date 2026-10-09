@@ -805,6 +805,20 @@ html,body{max-width:100%;overflow-x:hidden}
   #employeeEditorCard{scroll-margin-top:76px}
 }
 
+
+/* rev34: dashboard delete + master manual meal registration */
+.manualChips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;min-height:28px;align-items:center}
+.manualDateTag{border:0;cursor:pointer;min-height:30px}
+.manualEmployeeList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:330px;overflow:auto;padding:2px}
+.manualEmployeeItem{display:flex!important;align-items:center;gap:9px;margin:0!important;padding:10px 11px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:500!important;cursor:pointer}
+.manualEmployeeItem input{width:18px!important;min-height:18px!important;flex:0 0 auto}
+.manualEmployeeItem span{min-width:0}
+.manualEmployeeItem b{display:block;font-size:13px}
+.manualEmployeeItem small{display:block;color:var(--sub);font-size:11px;margin-top:2px}
+@media(max-width:800px){
+  .manualEmployeeList{grid-template-columns:1fr;max-height:300px}
+}
+
 </style>
 </head>
 <body>
@@ -927,7 +941,14 @@ html,body{max-width:100%;overflow-x:hidden}
 
 <section id="adminView" class="hidden" style="margin-top:14px">
 <div id="adminTabs" class="tabs"><button type="button" class="on" data-tab="dash">현황</button><button type="button" data-tab="users">직원관리</button><button type="button" data-tab="restaurants">식당·QR</button><button type="button" data-tab="records">식사기록·정산</button><button type="button" data-tab="settings">설정</button></div>
-<div id="tab-dash" class="adminPanel on"><div id="kpis" class="kpis"></div><div class="card" style="margin-top:12px"><h2>이번 달 집계</h2><div id="dashSummary" class="table"></div></div></div>
+<div id="tab-dash" class="adminPanel on">
+<div id="kpis" class="kpis"></div>
+<div class="card" style="margin-top:12px"><h2>이번 달 집계</h2><div id="dashSummary" class="table"></div></div>
+<div class="card" style="margin-top:12px">
+  <div class="row"><div><h2 style="margin:0">최근 식사 등록내역</h2><p class="muted small" style="margin:4px 0 0">잘못 등록된 기록은 마스터가 여기서 바로 삭제할 수 있습니다.</p></div></div>
+  <div class="table" style="margin-top:12px"><table><thead><tr><th>일자</th><th>시간</th><th>이름</th><th>부서/업체</th><th>식당</th><th>식사</th><th>등록방식</th><th>관리</th></tr></thead><tbody id="dashRecentBody"></tbody></table></div>
+</div>
+</div>
 
 <div id="tab-users" class="adminPanel">
 <div class="grid g2">
@@ -963,6 +984,27 @@ html,body{max-width:100%;overflow-x:hidden}
 
 <div id="tab-records" class="adminPanel">
 <div class="card">
+  <h2>누락 식사 일괄등록</h2>
+  <p class="muted small">등록하지 못한 직원을 마스터가 날짜·식당·식사구분별로 한 번에 등록합니다. 정확한 식사시간은 알 수 없으므로 화면에는 시간 대신 '-'로 표시됩니다.</p>
+  <div class="row mobile">
+    <div><label>날짜</label><input id="manualDate" type="date"></div>
+    <button id="addManualDateBtn" type="button" class="btn2 auto">날짜 추가</button>
+    <div><label>식당</label><select id="manualRestaurant"></select></div>
+    <div><label>식사구분</label><select id="manualPeriod"></select></div>
+  </div>
+  <div id="manualDatesList" class="manualChips"></div>
+  <div class="sep"></div>
+  <div class="row mobile">
+    <div><label>직원 검색</label><input id="manualEmployeeSearch" type="search" placeholder="이름 · 사번 · 부서"></div>
+    <button id="selectVisibleManualUsers" type="button" class="btn2 auto">검색결과 전체선택</button>
+    <button id="clearManualUsers" type="button" class="btn2 auto">선택해제</button>
+  </div>
+  <div id="manualSelectionInfo" class="muted small" style="margin:8px 0"></div>
+  <div id="manualEmployeeList" class="manualEmployeeList"></div>
+  <button id="manualRegisterBtn" type="button" class="btn full big" style="margin-top:12px">선택 인원 × 선택 날짜 일괄등록</button>
+  <div id="manualRegisterMsg"></div>
+</div>
+<div class="card" style="margin-top:12px">
 <div class="row mobile">
 <div><label>월간 집계</label><input id="rmMonth" type="month"></div>
 <div><label>식당</label><select id="rmRestaurant"><option value="">전체 식당</option></select></div>
@@ -1003,7 +1045,7 @@ var SITE_BASE="https://fjfnkh8fnj-a11y.github.io/FCT-MEAL/";
 function $(id){return document.getElementById(id)}
 var token="",vendorToken="";try{token=localStorage.getItem("fct_meal_token")||"";vendorToken=localStorage.getItem("fct_vendor_token")||""}catch(e){}
 var user=null,vendor=null,restaurantId=new URLSearchParams(location.search).get("restaurant")||"",restaurant=null;
-var participants=[],savedCompanions=[],adminUsers=[],adminDepartments=[],adminRestaurants=[],adminPeriods=[],adminRecords=[],adminCalendar=[],adminVendorAccounts=[];
+var participants=[],savedCompanions=[],adminUsers=[],adminDepartments=[],adminRestaurants=[],adminPeriods=[],adminRecords=[],adminCalendar=[],adminVendorAccounts=[],manualUsers=[],manualDates=[],manualSelectedUsers=new Set();
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]})}
 function msg(id,text,ok){var e=$(id);e.className=text?(ok?"ok":"err"):"";e.textContent=text||""}
 async function post(data){try{var r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});return await r.json()}catch(e){return {ok:false,message:"서버 연결에 실패했습니다."}}}
@@ -1166,9 +1208,35 @@ function showReceipt(j){var rows=(j.registered||[]).map(function(x){return '<div
 async function loadRecent(){var j=await post({action:"recent",token:token});$("recentBody").innerHTML=j.ok&&j.records.length?j.records.map(function(r){return "<tr><td>"+esc(r.meal_date)+"</td><td>"+esc(String(r.meal_time).slice(0,8))+"</td><td>"+esc(r.restaurant_name)+"</td><td>"+esc(r.period_label)+"</td><td>"+esc(r.person_name)+"</td></tr>"}).join(""):'<tr><td colspan="5">등록내역이 없습니다.</td></tr>'}
 
 Array.prototype.forEach.call($("adminTabs").querySelectorAll("[data-tab]"),function(b){b.onclick=function(){adminTab(b.getAttribute("data-tab"))}});
-function adminTab(n){Array.prototype.forEach.call($("adminTabs").querySelectorAll("[data-tab]"),function(b){b.classList.toggle("on",b.getAttribute("data-tab")===n)});Array.prototype.forEach.call(document.querySelectorAll(".adminPanel"),function(p){p.classList.remove("on")});$("tab-"+n).classList.add("on");if(n==="users"){loadUsers();loadAdminDepartments();}if(n==="restaurants")loadRestaurants();if(n==="records"){loadMonthlySummary();loadRecords();}if(n==="settings"){loadPeriods();loadCalendarSettings()}}
+function adminTab(n){Array.prototype.forEach.call($("adminTabs").querySelectorAll("[data-tab]"),function(b){b.classList.toggle("on",b.getAttribute("data-tab")===n)});Array.prototype.forEach.call(document.querySelectorAll(".adminPanel"),function(p){p.classList.remove("on")});$("tab-"+n).classList.add("on");if(n==="users"){loadUsers();loadAdminDepartments();}if(n==="restaurants")loadRestaurants();if(n==="records"){loadManualRegistrationOptions();loadMonthlySummary();loadRecords();}if(n==="settings"){loadPeriods();loadCalendarSettings()}}
 function todayKst(){return new Date(Date.now()+9*3600000).toISOString().slice(0,10)}function num(n){return new Intl.NumberFormat("ko-KR").format(n||0)}
-async function loadDashboard(){var t=todayKst(),f=t.slice(0,7)+"-01",j=await post({action:"admin_records",token:token,from:f,to:t});if(!j.ok)return;adminRecords=j.records||[];var today=adminRecords.filter(function(x){return x.meal_date===t}),amt=adminRecords.reduce(function(s,x){return s+Number(x.price||0)},0),labels={};today.forEach(function(x){labels[x.period_label]=(labels[x.period_label]||0)+1});$("kpis").innerHTML=[["오늘 총 식수",today.length+"식"],["오늘 점심",(labels["점심"]||0)+"식"],["오늘 저녁",(labels["저녁"]||0)+"식"],["오늘 아침/야식",((labels["아침"]||0)+(labels["야식"]||0))+"식"],["이번달 예상 식대",num(amt)+"원"]].map(function(x){return '<div class="kpi"><span class="muted small">'+x[0]+'</span><b>'+x[1]+'</b></div>'}).join("");$("dashSummary").innerHTML=summaryTable(adminRecords)}
+function mealDisplayTime(x){return x&&x.registration_source==="ADMIN"?"-":String(x&&x.meal_time||"").slice(0,8)}
+function mealSourceLabel(x){return x&&x.registration_source==="ADMIN"?"관리자 일괄등록":"QR 등록"}
+function renderDashboardRecent(){
+  var rows=(adminRecords||[]).slice(0,30);
+  $("dashRecentBody").innerHTML=rows.length?rows.map(function(x){
+    var group=x.person_type==="EXTERNAL"?(x.external_company||"외부업체"):(x.department||"-");
+    return '<tr><td>'+esc(x.meal_date)+'</td><td>'+esc(mealDisplayTime(x))+'</td><td>'+esc(x.person_name)+'</td><td>'+esc(group)+'</td><td>'+esc(x.restaurant_name)+'</td><td>'+esc(x.period_label)+'</td><td>'+esc(mealSourceLabel(x))+'</td><td><button type="button" class="danger" data-dash-del="'+x.id+'">삭제</button></td></tr>';
+  }).join(""):'<tr><td colspan="8">기록이 없습니다.</td></tr>';
+  Array.prototype.forEach.call($("dashRecentBody").querySelectorAll("[data-dash-del]"),function(b){
+    b.onclick=async function(){
+      if(!confirm("이 식사기록을 삭제할까요?"))return;
+      var j=await post({action:"admin_delete_record",token:token,id:b.getAttribute("data-dash-del")});
+      if(!j.ok){alert(j.message);return}
+      await loadDashboard();
+    };
+  });
+}
+async function loadDashboard(){
+  var t=todayKst(),f=t.slice(0,7)+"-01",j=await post({action:"admin_records",token:token,from:f,to:t});
+  if(!j.ok)return;
+  adminRecords=j.records||[];
+  var today=adminRecords.filter(function(x){return x.meal_date===t}),amt=adminRecords.reduce(function(s,x){return s+Number(x.price||0)},0),labels={};
+  today.forEach(function(x){labels[x.period_label]=(labels[x.period_label]||0)+1});
+  $("kpis").innerHTML=[["오늘 총 식수",today.length+"식"],["오늘 점심",(labels["점심"]||0)+"식"],["오늘 저녁",(labels["저녁"]||0)+"식"],["오늘 아침/야식",((labels["아침"]||0)+(labels["야식"]||0))+"식"],["이번달 예상 식대",num(amt)+"원"]].map(function(x){return '<div class="kpi"><span class="muted small">'+x[0]+'</span><b>'+x[1]+'</b></div>'}).join("");
+  $("dashSummary").innerHTML=summaryTable(adminRecords);
+  renderDashboardRecent();
+}
 function renderUsers(){
   var q=String($("adminUserSearch")?.value||"").trim().toLowerCase();
   var rows=adminUsers.filter(function(x){
@@ -1331,13 +1399,71 @@ $("loadMonthlyBtn").onclick=loadMonthlySummary;
 $("rmRestaurant").onchange=loadMonthlySummary;
 $("downloadMonthlyBtn").onclick=function(){var month=$("rmMonth").value||todayKst().slice(0,7),rid=$("rmRestaurant").value||"";getXlsx("admin_monthly_report_xlsx",{month:month,restaurant_id:rid})};
 
-async function loadRecords(){if(!$("rf").value){var t=todayKst();$("rf").value=t.slice(0,7)+"-01";$("rt").value=t}var j=await post({action:"admin_records",token:token,from:$("rf").value,to:$("rt").value});if(!j.ok){alert(j.message);return}adminRecords=(j.records||[]).filter(function(x){return x.restaurant_name!=="검증식당"});$("recordSummary").innerHTML=summaryTable(adminRecords);$("recordsBody").innerHTML=adminRecords.length?adminRecords.map(function(x){var g=x.person_type==="EXTERNAL"?x.external_company:x.department;return '<tr><td>'+esc(x.meal_date)+'</td><td>'+esc(String(x.meal_time).slice(0,8))+'</td><td>'+esc(x.person_name)+'</td><td>'+esc(x.employee_no||"-")+'</td><td>'+esc(x.person_type==="EXTERNAL"?"외부 엔지니어":x.worker_type==="OP"?"OP":"엔지니어")+'</td><td>'+esc(g||"-")+'</td><td>'+esc(x.restaurant_name)+'</td><td>'+esc(x.period_label)+'</td><td>'+esc(x.registrant_name)+'</td><td>'+num(x.price)+'원</td><td><button type="button" class="danger" data-del="'+x.id+'">삭제</button></td></tr>'}).join(""):'<tr><td colspan="11">기록이 없습니다.</td></tr>';Array.prototype.forEach.call($("recordsBody").querySelectorAll("[data-del]"),function(b){b.onclick=function(){deleteRecord(b.getAttribute("data-del"))}})}
-$("loadRecordsBtn").onclick=loadRecords;$("downloadRecordsBtn").onclick=function(){downloadCSV(adminRecords.map(function(x){return {"일자":x.meal_date,"시간":String(x.meal_time).slice(0,8),"이름":x.person_name,"사번":x.employee_no||"","구분":x.person_type==="EXTERNAL"?"외부 엔지니어":x.worker_type==="OP"?"OP":"엔지니어","부서/업체":x.person_type==="EXTERNAL"?x.external_company:x.department,"식당":x.restaurant_name,"식사":x.period_label,"등록자":x.registrant_name,"금액":x.price}}),"FCT_식사기록_"+$("rf").value+"_"+$("rt").value+".csv")};
-async function deleteRecord(id){if(!confirm("이 식사기록을 삭제할까요?"))return;var j=await post({action:"admin_delete_record",token:token,id:id});if(!j.ok)alert(j.message);loadRecords()}
+
+function renderManualDates(){
+  $("manualDatesList").innerHTML=manualDates.length?manualDates.map(function(d){return '<button type="button" class="tag manualDateTag" data-date="'+esc(d)+'">'+esc(d)+' ×</button>'}).join(""):'<span class="muted small">선택된 날짜가 없습니다.</span>';
+  Array.prototype.forEach.call($("manualDatesList").querySelectorAll("[data-date]"),function(b){b.onclick=function(){manualDates=manualDates.filter(function(d){return d!==b.getAttribute("data-date")});renderManualDates();renderManualSelectionInfo()}});
+}
+function filteredManualUsers(){
+  var q=String($("manualEmployeeSearch").value||"").trim().toLowerCase();
+  return manualUsers.filter(function(x){
+    if(!q)return true;
+    return [x.employee_no||"",x.name||"",x.department||"",x.worker_type==="OP"?"op":"엔지니어"].some(function(v){return String(v).toLowerCase().includes(q)});
+  });
+}
+function renderManualSelectionInfo(){
+  $("manualSelectionInfo").textContent="선택 인원 "+manualSelectedUsers.size+"명 · 선택 날짜 "+manualDates.length+"일 · 예상 등록 "+(manualSelectedUsers.size*manualDates.length)+"건";
+}
+function renderManualUsers(){
+  var rows=filteredManualUsers();
+  $("manualEmployeeList").innerHTML=rows.length?rows.map(function(x){
+    var checked=manualSelectedUsers.has(x.id)?" checked":"";
+    return '<label class="manualEmployeeItem"><input type="checkbox" data-manual-user="'+x.id+'"'+checked+'><span><b>'+esc(x.name)+'</b><small>'+esc(x.employee_no||"사번 미등록")+' · '+esc(x.department)+' · '+(x.worker_type==="OP"?"OP":"엔지니어")+'</small></span></label>';
+  }).join(""):'<div class="muted small" style="padding:12px">검색 결과가 없습니다.</div>';
+  Array.prototype.forEach.call($("manualEmployeeList").querySelectorAll("[data-manual-user]"),function(ch){
+    ch.onchange=function(){if(ch.checked)manualSelectedUsers.add(ch.getAttribute("data-manual-user"));else manualSelectedUsers.delete(ch.getAttribute("data-manual-user"));renderManualSelectionInfo()};
+  });
+  renderManualSelectionInfo();
+}
+async function loadManualRegistrationOptions(){
+  var pair=await Promise.all([post({action:"admin_users",token:token}),post({action:"admin_restaurants",token:token})]);
+  var uj=pair[0],rj=pair[1];
+  if(!uj.ok||!rj.ok){msg("manualRegisterMsg",(uj.message||rj.message||"일괄등록 정보를 불러오지 못했습니다."),false);return}
+  manualUsers=(uj.users||[]).filter(function(x){return x.active});
+  var rs=(rj.restaurants||[]).filter(function(x){return x.active&&x.name!=="검증식당"});
+  var ps=rj.periods||[];
+  $("manualRestaurant").innerHTML=rs.map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>'}).join("");
+  $("manualPeriod").innerHTML=ps.map(function(x){return '<option value="'+esc(x.code)+'">'+esc(x.label)+(x.active?"":" (현재 중지)")+'</option>'}).join("");
+  if(!$("manualDate").value)$("manualDate").value=todayKst();
+  renderManualDates();renderManualUsers();
+}
+$("addManualDateBtn").onclick=function(){
+  var d=$("manualDate").value;
+  if(!d)return;
+  if(d>todayKst()){msg("manualRegisterMsg","미래 날짜는 추가할 수 없습니다.",false);return}
+  if(manualDates.indexOf(d)<0)manualDates.push(d);
+  manualDates.sort();renderManualDates();renderManualSelectionInfo();
+};
+$("manualEmployeeSearch").oninput=renderManualUsers;
+$("selectVisibleManualUsers").onclick=function(){filteredManualUsers().forEach(function(x){manualSelectedUsers.add(x.id)});renderManualUsers()};
+$("clearManualUsers").onclick=function(){manualSelectedUsers.clear();renderManualUsers()};
+$("manualRegisterBtn").onclick=async function(){
+  if(!manualDates.length){msg("manualRegisterMsg","등록할 날짜를 추가해 주세요.",false);return}
+  if(!manualSelectedUsers.size){msg("manualRegisterMsg","등록할 직원을 선택해 주세요.",false);return}
+  var total=manualDates.length*manualSelectedUsers.size;
+  if(!confirm("선택한 "+manualSelectedUsers.size+"명 × "+manualDates.length+"일 = "+total+"건을 일괄등록할까요?\n정확한 식사시간은 기록되지 않습니다."))return;
+  var j=await post({action:"admin_bulk_register_meals",token:token,restaurant_id:$("manualRestaurant").value,period_code:$("manualPeriod").value,dates:manualDates,employee_ids:Array.from(manualSelectedUsers)});
+  msg("manualRegisterMsg",j.ok?(j.message+" / 중복·제외 "+(j.skipped_count||0)+"건"):j.message,j.ok);
+  if(j.ok){manualDates=[];manualSelectedUsers.clear();renderManualDates();renderManualUsers();await loadDashboard();await loadMonthlySummary();await loadRecords()}
+};
+
+async function loadRecords(){if(!$("rf").value){var t=todayKst();$("rf").value=t.slice(0,7)+"-01";$("rt").value=t}var j=await post({action:"admin_records",token:token,from:$("rf").value,to:$("rt").value});if(!j.ok){alert(j.message);return}adminRecords=(j.records||[]).filter(function(x){return x.restaurant_name!=="검증식당"});$("recordSummary").innerHTML=summaryTable(adminRecords);$("recordsBody").innerHTML=adminRecords.length?adminRecords.map(function(x){var g=x.person_type==="EXTERNAL"?x.external_company:x.department;return '<tr><td>'+esc(x.meal_date)+'</td><td>'+esc(mealDisplayTime(x))+'</td><td>'+esc(x.person_name)+'</td><td>'+esc(x.employee_no||"-")+'</td><td>'+esc(x.person_type==="EXTERNAL"?"외부 엔지니어":x.worker_type==="OP"?"OP":"엔지니어")+'</td><td>'+esc(g||"-")+'</td><td>'+esc(x.restaurant_name)+'</td><td>'+esc(x.period_label)+'</td><td>'+esc(x.registrant_name)+'</td><td>'+num(x.price)+'원</td><td><button type="button" class="danger" data-del="'+x.id+'">삭제</button></td></tr>'}).join(""):'<tr><td colspan="11">기록이 없습니다.</td></tr>';Array.prototype.forEach.call($("recordsBody").querySelectorAll("[data-del]"),function(b){b.onclick=function(){deleteRecord(b.getAttribute("data-del"))}})}
+$("loadRecordsBtn").onclick=loadRecords;$("downloadRecordsBtn").onclick=function(){downloadCSV(adminRecords.map(function(x){return {"일자":x.meal_date,"시간":mealDisplayTime(x),"이름":x.person_name,"사번":x.employee_no||"","구분":x.person_type==="EXTERNAL"?"외부 엔지니어":x.worker_type==="OP"?"OP":"엔지니어","부서/업체":x.person_type==="EXTERNAL"?x.external_company:x.department,"식당":x.restaurant_name,"식사":x.period_label,"등록자":x.registrant_name,"등록방식":mealSourceLabel(x),"금액":x.price}}),"FCT_식사기록_"+$("rf").value+"_"+$("rt").value+".csv")};
+async function deleteRecord(id){if(!confirm("이 식사기록을 삭제할까요?"))return;var j=await post({action:"admin_delete_record",token:token,id:id});if(!j.ok){alert(j.message);return}loadRecords();loadDashboard()}
 function summaryTable(rows){var m={};rows.forEach(function(x){var g=x.person_type==="EXTERNAL"?(x.external_company||"외부업체"):(x.department||"-"),k=x.restaurant_name+"|"+x.period_label+"|"+g;if(!m[k])m[k]={r:x.restaurant_name,p:x.period_label,g:g,c:0,a:0};m[k].c++;m[k].a+=Number(x.price||0)});var a=Object.keys(m).map(function(k){return m[k]});return '<table><thead><tr><th>식당</th><th>식사</th><th>부서/업체</th><th>식수</th><th>금액</th></tr></thead><tbody>'+(a.length?a.map(function(x){return '<tr><td>'+esc(x.r)+'</td><td>'+esc(x.p)+'</td><td>'+esc(x.g)+'</td><td>'+x.c+'</td><td>'+num(x.a)+'원</td></tr>'}).join(""):'<tr><td colspan="5">기록이 없습니다.</td></tr>')+'</tbody></table>'}
 function downloadCSV(rows,name){if(!rows.length){alert("다운로드할 데이터가 없습니다.");return}var h=Object.keys(rows[0]),lines=[h.map(csvCell).join(",")];rows.forEach(function(r){lines.push(h.map(function(k){return csvCell(r[k])}).join(","))});var blob=new Blob(["\uFEFF"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},500)}
 function csvCell(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'}
-(async function(){var t=todayKst();$("rf").value=t.slice(0,7)+"-01";$("rt").value=t;$("rmMonth").value=t.slice(0,7);$("calMonth").value=t.slice(0,7);$("vendorMonth").value=t.slice(0,7);$("vendorSalesYear").value=t.slice(0,4);await loadPublicDepartments();await loadRestaurant();await restore()})();
+(async function(){var t=todayKst();$("rf").value=t.slice(0,7)+"-01";$("rt").value=t;$("rmMonth").value=t.slice(0,7);$("calMonth").value=t.slice(0,7);$("vendorMonth").value=t.slice(0,7);$("vendorSalesYear").value=t.slice(0,4);$("manualDate").value=t;await loadPublicDepartments();await loadRestaurant();await restore()})();
 })();
 </script>
 </body>
