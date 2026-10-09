@@ -840,7 +840,6 @@ html,body{max-width:100%;overflow-x:hidden}
 .userCalendarLegend{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0 10px;font-size:12px;color:var(--sub)}
 .userCalendarLegend span{display:flex;align-items:center;gap:5px}
 .calDot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#d8e0ea}
-.calDot.allow{background:#dff5e8;border:1px solid #86c99d}
 .calDot.blocked{background:#ffe1de;border:1px solid #e8a19b}
 .calDot.override{background:#fff0bf;border:1px solid #e6c259}
 .calDot.eaten{background:#dfeaff;border:1px solid #7fa2ea}
@@ -1008,9 +1007,8 @@ html,body{max-width:100%;overflow-x:hidden}
       <div class="userCalendarControls"><button id="userCalPrev" type="button" class="btn2 auto" aria-label="이전 달">‹</button><input id="userCalMonth" type="month"><button id="userCalNext" type="button" class="btn2 auto" aria-label="다음 달">›</button></div>
     </div>
     <div class="userCalendarLegend">
-      <span><i class="calDot allow"></i>식사가능</span>
       <span><i class="calDot blocked"></i>식사불가/휴무</span>
-      <span><i class="calDot override"></i>관리자 지정</span>
+      <span><i class="calDot override"></i>관리자 예외</span>
       <span><i class="calDot eaten"></i>내 식사기록</span>
     </div>
     <div class="userCalendarWeek"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
@@ -1322,10 +1320,11 @@ function renderUserCalendar(days,meals){
     if(d.saturday)cls.push("sat");
     if(today)cls.push("today");
     if(own.length)cls.push("hasMeal");
-    var status=d.override_mode==="ALLOW"?"식사가능":d.override_mode==="BLOCK"?"식사불가":d.blocked?(d.holiday_label||d.reason||"식사불가"):"식사가능";
-    var note=d.note?'<div class="userCalNote">'+esc(d.note)+'</div>':"";
+    var status=d.override_mode==="ALLOW"?"식사가능":(d.override_mode==="BLOCK"||d.blocked)?"식사불가":"";
+    var reason=d.override_mode==="ALLOW"?(d.note||"관리자 예외"):(d.blocked?(d.holiday_label||d.reason||d.note||""):(d.note||""));
+    var note=reason?'<div class="userCalNote">'+esc(reason)+'</div>':"";
     var mealsHtml=own.map(function(m){return '<div class="myMealChip" title="'+esc(m.restaurant_name+" · "+m.period_label)+'"><b>'+esc(m.period_label)+'</b><span>'+esc(m.restaurant_name)+'</span></div>';}).join("");
-    html+='<div class="'+cls.join(" ")+'"><div class="userCalDate"><b>'+Number(d.date.slice(-2))+'</b><span>'+esc(d.weekday)+'</span></div><div class="userCalStatus">'+esc(status)+'</div>'+note+mealsHtml+'</div>';
+    html+='<div class="'+cls.join(" ")+'"><div class="userCalDate"><b>'+Number(d.date.slice(-2))+'</b><span>'+esc(d.weekday)+'</span></div>'+(status?'<div class="userCalStatus">'+esc(status)+'</div>':"")+note+mealsHtml+'</div>';
   });
   grid.innerHTML=html;
   $("userCalendarMsg").textContent=month.replace("-","년 ")+"월 · 내 식사 "+(meals||[]).length+"건";
