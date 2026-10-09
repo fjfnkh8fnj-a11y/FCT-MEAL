@@ -892,6 +892,24 @@ html,body{max-width:100%;overflow-x:hidden}
   .userCalendarFootnote{font-size:11px;line-height:1.5}
 }
 
+
+/* rev40: bounded recent lists + searchable date-grouped master meal records */
+.userRecentScroll{max-height:360px;overflow:auto}
+.userRecentScroll thead th,.adminMealScroll thead th{position:sticky;top:0;z-index:2;background:#f8fafc}
+.adminMealFilters{display:grid;grid-template-columns:180px minmax(260px,1fr) auto;gap:8px;align-items:end;margin-top:12px}
+.adminMealScroll{max-height:540px;overflow:auto}
+.mealDateGroup td{position:sticky;top:40px;z-index:1;background:#eef3fb!important;color:#17358f!important;border-top:1px solid #d8e2f2;border-bottom:1px solid #d8e2f2;padding:8px 10px!important}
+.mealDateGroup td span{margin-left:8px;font-size:11px;color:#71809a;font-weight:700}
+.adminMealScroll td:last-child{white-space:nowrap}
+@media(max-width:800px){
+  .userRecentScroll{max-height:320px}
+  .adminMealFilters{grid-template-columns:1fr}
+  .adminMealFilters .btn2{width:100%}
+  .adminMealScroll{max-height:480px}
+  .adminMealScroll table{min-width:900px}
+  .mealDateGroup td{top:40px}
+}
+
 </style>
 </head>
 <body>
@@ -1011,8 +1029,8 @@ html,body{max-width:100%;overflow-x:hidden}
   </div>
 
   <div class="card">
-    <div class="row"><div><h2 style="margin:0">최근 등록내역</h2><p class="muted small" style="margin:4px 0 0">내 계정으로 등록한 최근 식사내역입니다.</p></div></div>
-    <div class="table" style="margin-top:12px"><table><thead><tr><th>일자</th><th>시간</th><th>식당</th><th>식사</th><th>대상</th></tr></thead><tbody id="recentBody"></tbody></table></div>
+    <div class="row"><div><h2 style="margin:0">최근 등록내역</h2><p class="muted small" style="margin:4px 0 0">최근 50건까지 표시되며, 많아지면 목록 안에서 스크롤됩니다.</p></div></div>
+    <div class="table userRecentScroll" style="margin-top:12px"><table><thead><tr><th>일자</th><th>시간</th><th>식당</th><th>식사</th><th>대상</th></tr></thead><tbody id="recentBody"></tbody></table></div>
   </div>
 
   <div class="card">
@@ -1039,8 +1057,14 @@ html,body{max-width:100%;overflow-x:hidden}
 <div id="kpis" class="kpis"></div>
 <div class="card" style="margin-top:12px"><h2>이번 달 집계</h2><div id="dashSummary" class="table"></div></div>
 <div class="card" style="margin-top:12px">
-  <div class="row"><div><h2 style="margin:0">최근 식사 등록내역</h2><p class="muted small" style="margin:4px 0 0">잘못 등록된 기록은 마스터가 여기서 바로 삭제할 수 있습니다.</p></div></div>
-  <div class="table" style="margin-top:12px"><table><thead><tr><th>일자</th><th>시간</th><th>이름</th><th>부서/업체</th><th>식당</th><th>식사</th><th>등록방식</th><th>관리</th></tr></thead><tbody id="dashRecentBody"></tbody></table></div>
+  <div class="row"><div><h2 style="margin:0">식사 등록내역</h2><p class="muted small" style="margin:4px 0 0">날짜별로 확인하고 검색한 뒤 잘못 등록된 기록을 바로 삭제할 수 있습니다.</p></div></div>
+  <div class="adminMealFilters">
+    <div><label>날짜</label><input id="dashMealDate" type="date"></div>
+    <div><label>검색</label><input id="dashMealSearch" type="search" placeholder="이름 · 사번 · 부서 · 식당 · 식사"></div>
+    <button id="dashMealClear" type="button" class="btn2 auto">초기화</button>
+  </div>
+  <div id="dashMealSearchInfo" class="muted small" style="margin-top:7px"></div>
+  <div class="table adminMealScroll" style="margin-top:10px"><table><thead><tr><th>시간</th><th>이름</th><th>사번</th><th>부서/업체</th><th>식당</th><th>식사</th><th>등록방식</th><th>관리</th></tr></thead><tbody id="dashRecentBody"></tbody></table></div>
 </div>
 </div>
 
@@ -1361,11 +1385,29 @@ function todayKst(){return new Date(Date.now()+9*3600000).toISOString().slice(0,
 function mealDisplayTime(x){return x&&x.registration_source==="ADMIN"?"-":String(x&&x.meal_time||"").slice(0,8)}
 function mealSourceLabel(x){return x&&x.registration_source==="ADMIN"?"관리자 일괄등록":"QR 등록"}
 function renderDashboardRecent(){
-  var rows=(adminRecords||[]).slice(0,30);
-  $("dashRecentBody").innerHTML=rows.length?rows.map(function(x){
+  var date=$("dashMealDate").value||"",q=String($("dashMealSearch").value||"").trim().toLowerCase();
+  var rows=(adminRecords||[]).filter(function(x){
+    if(date&&x.meal_date!==date)return false;
+    if(!q)return true;
     var group=x.person_type==="EXTERNAL"?(x.external_company||"외부업체"):(x.department||"-");
-    return '<tr><td>'+esc(x.meal_date)+'</td><td>'+esc(mealDisplayTime(x))+'</td><td>'+esc(x.person_name)+'</td><td>'+esc(group)+'</td><td>'+esc(x.restaurant_name)+'</td><td>'+esc(x.period_label)+'</td><td>'+esc(mealSourceLabel(x))+'</td><td><button type="button" class="danger" data-dash-del="'+x.id+'">삭제</button></td></tr>';
-  }).join(""):'<tr><td colspan="8">기록이 없습니다.</td></tr>';
+    var type=x.worker_type==="OP"?"OP":"EG";
+    return [x.person_name||"",x.employee_no||"",group,x.restaurant_name||"",x.period_label||"",mealSourceLabel(x),x.registrant_name||"",type]
+      .some(function(v){return String(v).toLowerCase().includes(q)});
+  });
+  $("dashMealSearchInfo").textContent="조회 "+rows.length+"건 / 이번 달 전체 "+(adminRecords||[]).length+"건";
+
+  var html="",lastDate="";
+  rows.forEach(function(x){
+    if(x.meal_date!==lastDate){
+      lastDate=x.meal_date;
+      var count=rows.filter(function(r){return r.meal_date===lastDate}).length;
+      html+='<tr class="mealDateGroup"><td colspan="8"><b>'+esc(lastDate)+'</b><span>'+count+'건</span></td></tr>';
+    }
+    var group=x.person_type==="EXTERNAL"?(x.external_company||"외부업체"):(x.department||"-");
+    return html+='<tr><td>'+esc(mealDisplayTime(x))+'</td><td>'+esc(x.person_name)+'</td><td>'+esc(x.employee_no||"-")+'</td><td>'+esc(group)+'</td><td>'+esc(x.restaurant_name)+'</td><td>'+esc(x.period_label)+'</td><td>'+esc(mealSourceLabel(x))+'</td><td><button type="button" class="danger" data-dash-del="'+x.id+'">삭제</button></td></tr>';
+  });
+  $("dashRecentBody").innerHTML=html||'<tr><td colspan="8">조건에 맞는 식사기록이 없습니다.</td></tr>';
+
   Array.prototype.forEach.call($("dashRecentBody").querySelectorAll("[data-dash-del]"),function(b){
     b.onclick=async function(){
       if(!confirm("이 식사기록을 삭제할까요?"))return;
@@ -1375,6 +1417,10 @@ function renderDashboardRecent(){
     };
   });
 }
+$("dashMealDate").onchange=renderDashboardRecent;
+$("dashMealSearch").oninput=renderDashboardRecent;
+$("dashMealClear").onclick=function(){$("dashMealDate").value="";$("dashMealSearch").value="";renderDashboardRecent()};
+
 async function loadDashboard(){
   var t=todayKst(),f=t.slice(0,7)+"-01",j=await post({action:"admin_records",token:token,from:f,to:t});
   if(!j.ok)return;
