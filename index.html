@@ -960,7 +960,7 @@ html,body{max-width:100%;overflow-x:hidden}
 <button id="saveUserBtn" type="button" class="btn" style="margin-top:12px">저장</button> <button id="clearUserBtn" type="button" class="btn2">초기화</button>
 <div class="sep"></div><h3>직원 Excel 일괄등록</h3><p class="muted small">Excel 양식의 사번 / 이름 / 부서 / 구분을 사용합니다. 사번 미발급 직원은 사번 칸을 비워두면 됩니다.</p><input id="employeeFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"><div class="row" style="margin-top:10px"><button id="employeeTemplateBtn" type="button" class="btn2">Excel 등록양식 다운로드</button><button id="employeeExportBtn" type="button" class="btn2">직원목록 Excel 다운로드</button></div>
 </div>
-<div class="card"><div class="row"><h2 style="margin:0">직원 목록</h2><button id="reloadUsersBtn" type="button" class="btn2 auto">새로고침</button></div><div id="employeeStats" class="statbar"></div><div class="notice">마스터로 지정된 직원은 이후 <b>사번 + PIN</b>으로 로그인하며 관리자 메뉴를 사용할 수 있습니다. 마스터 지정·해제는 최초 마스터만 가능합니다.</div><div class="adminUserSearch"><input id="adminUserSearch" type="search" placeholder="이름 · 사번 · 부서 검색" autocomplete="off"><button id="clearAdminUserSearch" type="button" class="btn2 auto">초기화</button></div><div id="adminUserSearchInfo" class="muted small"></div><div class="table" style="margin-top:10px"><table><thead><tr><th>사번</th><th>이름</th><th>부서</th><th>구분</th><th>권한</th><th>상태</th><th>관리</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
+<div class="card"><div class="row"><h2 style="margin:0">직원 목록</h2><button id="reloadUsersBtn" type="button" class="btn2 auto">새로고침</button></div><div id="employeeStats" class="statbar"></div><div class="notice">마스터로 지정된 직원은 이후 <b>사번 + PIN</b>으로 로그인하며 관리자 메뉴를 사용할 수 있습니다. 마스터 지정·해제는 최초 마스터만 가능합니다.<br>직원 <b>삭제</b> 시 계정만 제거되며 과거 식사기록·정산내역은 유지됩니다.</div><div class="adminUserSearch"><input id="adminUserSearch" type="search" placeholder="이름 · 사번 · 부서 검색" autocomplete="off"><button id="clearAdminUserSearch" type="button" class="btn2 auto">초기화</button></div><div id="adminUserSearchInfo" class="muted small"></div><div class="table" style="margin-top:10px"><table><thead><tr><th>사번</th><th>이름</th><th>부서</th><th>구분</th><th>권한</th><th>상태</th><th>관리</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
 </div>
 <div class="card" style="margin-top:12px">
   <div class="row"><div><h2 style="margin:0">부서 관리</h2><p class="muted small" style="margin:4px 0 0">마스터가 직원 등록에 사용할 부서를 추가할 수 있습니다.</p></div></div>
@@ -1251,7 +1251,9 @@ function renderUsers(){
     var role=x.role==="OWNER"?"최초 마스터":x.role==="MASTER"?"마스터(PIN)":"일반",m="",no=x.employee_no?esc(x.employee_no):'<span class="tag">사번 미등록</span>';
     if(user.role==="OWNER"&&x.role!=="OWNER"&&x.employee_no)m=x.role==="MASTER"?'<button type="button" class="danger" data-revoke="'+x.id+'">마스터 해제</button>':'<button type="button" class="okbtn" data-grant="'+x.id+'">마스터 지정(PIN)</button>';
     var st=x.role==="OWNER"?"":'<button type="button" class="'+(x.active?"danger":"okbtn")+'" data-status="'+x.id+'" data-on="'+(!x.active)+'">'+(x.active?"사용중지":"사용복구")+'</button>';
-    return '<tr><td>'+no+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.department)+'</td><td>'+(x.worker_type==="OP"?"OP":"엔지니어")+'</td><td>'+role+'</td><td>'+(x.active?"사용":"중지")+'</td><td><button type="button" class="btn2" data-edit="'+x.id+'">수정</button> '+m+' '+st+'</td></tr>';
+    var canDelete=x.role!=="OWNER"&&!(user.role==="MASTER"&&x.role==="MASTER");
+    var del=canDelete?'<button type="button" class="danger" data-user-delete="'+x.id+'">삭제</button>':"";
+    return '<tr><td>'+no+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.department)+'</td><td>'+(x.worker_type==="OP"?"OP":"엔지니어")+'</td><td>'+role+'</td><td>'+(x.active?"사용":"중지")+'</td><td><button type="button" class="btn2" data-edit="'+x.id+'">수정</button> '+m+' '+st+' '+del+'</td></tr>';
   }).join("");
   if(!rows.length)$("usersBody").innerHTML='<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">검색 결과가 없습니다.</td></tr>';
   bindUserButtons();
@@ -1288,7 +1290,13 @@ async function loadUsers(){
   $("employeeStats").innerHTML='<div class="statbox"><span class="muted small">등록 직원</span><b>'+activeUsers.length+'명</b></div><div class="statbox"><span class="muted small">사번 등록</span><b>'+(activeUsers.length-noCount)+'명</b></div><div class="statbox"><span class="muted small">사전등록 · 사번 미등록</span><b>'+noCount+'명</b></div>';
   renderUsers();
 }
-function bindUserButtons(){Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-edit]"),function(b){b.onclick=function(){editUser(b.getAttribute("data-edit"))}});Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-grant]"),function(b){b.onclick=function(){setMaster(b.getAttribute("data-grant"),true)}});Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-revoke]"),function(b){b.onclick=function(){setMaster(b.getAttribute("data-revoke"),false)}});Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-status]"),function(b){b.onclick=function(){toggleUser(b.getAttribute("data-status"),b.getAttribute("data-on")==="true")}})}
+function bindUserButtons(){
+  Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-edit]"),function(b){b.onclick=function(){editUser(b.getAttribute("data-edit"))}});
+  Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-grant]"),function(b){b.onclick=function(){setMaster(b.getAttribute("data-grant"),true)}});
+  Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-revoke]"),function(b){b.onclick=function(){setMaster(b.getAttribute("data-revoke"),false)}});
+  Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-status]"),function(b){b.onclick=function(){toggleUser(b.getAttribute("data-status"),b.getAttribute("data-on")==="true")}});
+  Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-user-delete]"),function(b){b.onclick=function(){deleteUser(b.getAttribute("data-user-delete"))}});
+}
 function clearUserForm(){$("euId").value="";$("euNo").value="";$("euNo").disabled=false;$("euName").value="";$("userEditState").classList.add("hidden");$("userEditState").textContent=""}
 function editUser(id){
   var x=adminUsers.find(function(y){return y.id===id});if(!x)return;
@@ -1302,6 +1310,17 @@ function editUser(id){
 $("clearUserBtn").onclick=clearUserForm;$("reloadUsersBtn").onclick=loadUsers;$("adminUserSearch").oninput=renderUsers;$("clearAdminUserSearch").onclick=function(){$("adminUserSearch").value="";renderUsers();$("adminUserSearch").focus()};
 $("saveUserBtn").onclick=async function(){var id=$("euId").value,x=id?adminUsers.find(function(y){return y.id===id}):null;var j=await post({action:"admin_save_user",token:token,id:id,employee_no:$("euNo").value,name:$("euName").value,department:$("euDept").value,worker_type:$("euType").value,active:x?x.active:true});if(!j.ok){alert(j.message);return}alert(j.message||"저장했습니다.");clearUserForm();loadUsers();loadAdminDepartments()};
 async function toggleUser(id,on){var x=adminUsers.find(function(y){return y.id===id});if(!x)return;var j=await post({action:"admin_save_user",token:token,id:x.id,employee_no:x.employee_no,name:x.name,department:x.department,worker_type:x.worker_type,active:on});if(!j.ok)alert(j.message);loadUsers();loadAdminDepartments()}
+async function deleteUser(id){
+  var x=adminUsers.find(function(y){return y.id===id});if(!x)return;
+  var label=x.name+(x.employee_no?" ("+x.employee_no+")":"");
+  if(!confirm(label+" 직원을 삭제할까요?\n\n과거 식사기록과 정산내역은 유지되고, 직원 로그인·검색·동행자 선택에서는 제거됩니다."))return;
+  var j=await post({action:"admin_delete_user",token:token,id:id});
+  if(!j.ok){alert(j.message);return}
+  if($("euId").value===id)clearUserForm();
+  alert(j.message||"직원을 삭제했습니다.");
+  await loadUsers();await loadAdminDepartments();
+}
+
 async function setMaster(id,on){
   var x=adminUsers.find(function(y){return y.id===id}),pin="";
   if(on){
