@@ -819,6 +819,17 @@ html,body{max-width:100%;overflow-x:hidden}
   .manualEmployeeList{grid-template-columns:1fr;max-height:300px}
 }
 
+
+/* rev36: employee management layout + department delete + OP/EG labels */
+.employeeListCard{width:100%}
+.employeeListTable{overflow-x:auto}
+.employeeListTable table{min-width:900px}
+.employeeListTable th:last-child,.employeeListTable td:last-child{min-width:300px;white-space:nowrap}
+#departmentsBody td:last-child{white-space:nowrap}
+@media(max-width:800px){
+  .employeeListTable table{min-width:860px}
+}
+
 </style>
 </head>
 <body>
@@ -858,7 +869,7 @@ html,body{max-width:100%;overflow-x:hidden}
       <h2>회원가입</h2>
       <div class="row mobile"><div><label>이름</label><input id="suName"></div><div><label>사번</label><input id="suNo"></div></div>
       <label>부서</label><select id="suDept"><option>품질</option><option>박막</option><option>전반</option><option>가공</option><option>소성</option><option>경영지원</option></select>
-      <label>구분</label><select id="suType"><option value="OP">OP</option><option value="ENGINEER">엔지니어</option></select>
+      <label>구분</label><select id="suType"><option value="OP">OP</option><option value="ENGINEER">EG</option></select>
       <button id="signupBtn" type="button" class="btn full big" style="margin-top:12px">회원가입</button><div id="signupMsg"></div>
     </div>
     <div id="vendorLoginForm" class="hidden">
@@ -952,21 +963,35 @@ html,body{max-width:100%;overflow-x:hidden}
 
 <div id="tab-users" class="adminPanel">
 <div class="grid g2">
-<div class="card" id="employeeEditorCard">
-<h2>직원 등록 / 수정</h2><input id="euId" type="hidden">
-<div id="userEditState" class="notice hidden"></div>
-<div class="row mobile"><div><label>사번 <span class="muted small">(미발급 시 공란)</span></label><input id="euNo" placeholder="사번 없으면 비워두세요"></div><div><label>이름</label><input id="euName"></div></div><div class="notice">사번이 아직 나오지 않은 직원도 먼저 등록할 수 있습니다. 나중에 같은 직원의 수정 화면에서 사번만 추가하면 기존 식사기록과 동행자 정보는 그대로 유지됩니다.</div>
-<div class="row mobile"><div><label>부서</label><select id="euDept"><option>품질</option><option>박막</option><option>전반</option><option>가공</option><option>소성</option><option>경영지원</option></select></div><div><label>구분</label><select id="euType"><option value="OP">OP</option><option value="ENGINEER">엔지니어</option></select></div></div>
-<button id="saveUserBtn" type="button" class="btn" style="margin-top:12px">저장</button> <button id="clearUserBtn" type="button" class="btn2">초기화</button>
-<div class="sep"></div><h3>직원 Excel 일괄등록</h3><p class="muted small">Excel 양식의 사번 / 이름 / 부서 / 구분을 사용합니다. 사번 미발급 직원은 사번 칸을 비워두면 됩니다.</p><input id="employeeFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"><div class="row" style="margin-top:10px"><button id="employeeTemplateBtn" type="button" class="btn2">Excel 등록양식 다운로드</button><button id="employeeExportBtn" type="button" class="btn2">직원목록 Excel 다운로드</button></div>
+  <div class="card" id="employeeEditorCard">
+    <h2>직원 등록 / 수정</h2><input id="euId" type="hidden">
+    <div id="userEditState" class="notice hidden"></div>
+    <div class="row mobile"><div><label>사번 <span class="muted small">(미발급 시 공란)</span></label><input id="euNo" placeholder="사번 없으면 비워두세요"></div><div><label>이름</label><input id="euName"></div></div>
+    <div class="notice">사번이 아직 나오지 않은 직원도 먼저 등록할 수 있습니다. 나중에 같은 직원의 수정 화면에서 사번만 추가하면 기존 식사기록과 동행자 정보는 그대로 유지됩니다.</div>
+    <div class="row mobile"><div><label>부서</label><select id="euDept"><option>품질</option><option>박막</option><option>전반</option><option>가공</option><option>소성</option><option>경영지원</option></select></div><div><label>구분</label><select id="euType"><option value="OP">OP</option><option value="ENGINEER">EG</option></select></div></div>
+    <button id="saveUserBtn" type="button" class="btn" style="margin-top:12px">저장</button> <button id="clearUserBtn" type="button" class="btn2">초기화</button>
+    <div class="sep"></div>
+    <h3>직원 Excel 일괄등록</h3>
+    <p class="muted small">Excel 양식의 사번 / 이름 / 부서 / 구분(OP/EG)을 사용합니다. 사번 미발급 직원은 사번 칸을 비워두면 됩니다.</p>
+    <input id="employeeFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv">
+    <div class="row" style="margin-top:10px"><button id="employeeTemplateBtn" type="button" class="btn2">Excel 등록양식 다운로드</button><button id="employeeExportBtn" type="button" class="btn2">직원목록 Excel 다운로드</button></div>
+  </div>
+
+  <div class="card">
+    <div class="row"><div><h2 style="margin:0">부서 관리</h2><p class="muted small" style="margin:4px 0 0">마스터가 직원 등록에 사용할 부서를 추가·삭제할 수 있습니다.</p></div></div>
+    <div class="row mobile" style="margin-top:10px"><input id="newDeptName" placeholder="추가할 부서명"><button id="addDeptBtn" type="button" class="btn auto">부서 추가</button></div>
+    <div id="deptMsg"></div>
+    <div class="table" style="margin-top:12px"><table><thead><tr><th>부서명</th><th>사용 직원</th><th>상태</th><th>관리</th></tr></thead><tbody id="departmentsBody"></tbody></table></div>
+  </div>
 </div>
-<div class="card"><div class="row"><h2 style="margin:0">직원 목록</h2><button id="reloadUsersBtn" type="button" class="btn2 auto">새로고침</button></div><div id="employeeStats" class="statbar"></div><div class="notice">마스터로 지정된 직원은 이후 <b>사번 + PIN</b>으로 로그인하며 관리자 메뉴를 사용할 수 있습니다. 마스터 지정·해제는 최초 마스터만 가능합니다.<br>직원 <b>삭제</b> 시 계정만 제거되며 과거 식사기록·정산내역은 유지됩니다.</div><div class="adminUserSearch"><input id="adminUserSearch" type="search" placeholder="이름 · 사번 · 부서 검색" autocomplete="off"><button id="clearAdminUserSearch" type="button" class="btn2 auto">초기화</button></div><div id="adminUserSearchInfo" class="muted small"></div><div class="table" style="margin-top:10px"><table><thead><tr><th>사번</th><th>이름</th><th>부서</th><th>구분</th><th>권한</th><th>상태</th><th>관리</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
-</div>
-<div class="card" style="margin-top:12px">
-  <div class="row"><div><h2 style="margin:0">부서 관리</h2><p class="muted small" style="margin:4px 0 0">마스터가 직원 등록에 사용할 부서를 추가할 수 있습니다.</p></div></div>
-  <div class="row mobile" style="margin-top:10px"><input id="newDeptName" placeholder="추가할 부서명"><button id="addDeptBtn" type="button" class="btn auto">부서 추가</button></div>
-  <div id="deptMsg"></div>
-  <div class="table" style="margin-top:12px"><table><thead><tr><th>부서명</th><th>사용 직원</th><th>상태</th><th>관리</th></tr></thead><tbody id="departmentsBody"></tbody></table></div>
+
+<div class="card employeeListCard" style="margin-top:12px">
+  <div class="row"><h2 style="margin:0">직원 목록</h2><button id="reloadUsersBtn" type="button" class="btn2 auto">새로고침</button></div>
+  <div id="employeeStats" class="statbar"></div>
+  <div class="notice">마스터로 지정된 직원은 이후 <b>사번 + PIN</b>으로 로그인하며 관리자 메뉴를 사용할 수 있습니다. 마스터 지정·해제는 최초 마스터만 가능합니다.<br>직원 <b>삭제</b> 시 계정만 제거되며 과거 식사기록·정산내역은 유지됩니다.</div>
+  <div class="adminUserSearch"><input id="adminUserSearch" type="search" placeholder="이름 · 사번 · 부서 검색" autocomplete="off"><button id="clearAdminUserSearch" type="button" class="btn2 auto">초기화</button></div>
+  <div id="adminUserSearchInfo" class="muted small"></div>
+  <div class="table employeeListTable" style="margin-top:10px"><table><thead><tr><th>사번</th><th>이름</th><th>부서</th><th>구분</th><th>권한</th><th>상태</th><th>관리</th></tr></thead><tbody id="usersBody"></tbody></table></div>
 </div>
 </div>
 
@@ -1188,7 +1213,7 @@ $("vendorYearlySalesBtn").onclick=loadVendorYearlySales;
 async function enter(){
 $("authView").classList.add("hidden");$("userView").classList.remove("hidden");
 $("who").textContent=user.name+" · "+user.department+" · "+(user.role==="USER"?"일반":user.role==="OWNER"?"최초 마스터":"마스터");
-$("identity").innerHTML="<b>"+esc(user.name)+"</b> · "+esc(user.department)+" · "+esc(user.employee_no)+" · "+(user.worker_type==="OP"?"OP":"엔지니어");
+$("identity").innerHTML="<b>"+esc(user.name)+"</b> · "+esc(user.department)+" · "+esc(user.employee_no)+" · "+(user.worker_type==="OP"?"OP":"EG");
 if(restaurant){$("restaurantName").textContent=restaurant.name;$("mealBox").classList.remove("hidden");$("noQr").classList.add("hidden")}else{$("mealBox").classList.add("hidden");$("noQr").classList.remove("hidden")}
 $("externalBlock").classList.toggle("hidden",!(user.worker_type==="ENGINEER"||user.role!=="USER"));
 $("adminView").classList.toggle("hidden",user.role==="USER");$("pinChangeNotice").classList.toggle("hidden",!user.pin_must_change);
@@ -1196,8 +1221,8 @@ await loadPrefs();renderParticipants();if(restaurant)await loadTodayCalendarStat
 }
 async function loadTodayCalendarStatus(){var j=await post({action:"calendar_today",token:token});if(!j.ok||!j.calendar)return;var cal=j.calendar,notice=$("dayBlockNotice");if(cal.blocked){notice.textContent="오늘은 "+(cal.reason||"휴무일")+"로 식사 등록이 불가합니다.";notice.classList.remove("hidden");$("registerBtn").disabled=true;$("registerBtn").textContent="오늘은 식사 등록 불가"}else{notice.classList.add("hidden");notice.textContent="";$("registerBtn").disabled=false;$("registerBtn").textContent="현재 인원 전체 식사 등록"}}
 async function loadPrefs(){var j=await post({action:"get_preferences",token:token});if(j.ok){savedCompanions=j.companions||[];$("autoLoad").checked=j.auto_load!==false;$("favInfo").textContent="저장된 동행자 "+savedCompanions.length+"명";if(restaurant&&$("autoLoad").checked)participants=savedCompanions.map(function(x){return JSON.parse(JSON.stringify(x))})}}
-function renderParticipants(){var s='<div class="person"><div class="info"><b>'+esc(user?user.name:"")+' <span class="tag '+(user&&user.worker_type==="OP"?"op":"eng")+'">'+(user&&user.worker_type==="OP"?"OP":"엔지니어")+'</span></b><span class="muted small">'+esc(user?user.department:"")+' · 본인</span></div></div>';participants.forEach(function(p,i){if(p.kind==="employee")s+='<div class="person"><div class="info"><b>'+esc(p.name)+' <span class="tag '+(p.worker_type==="OP"?"op":"eng")+'">'+(p.worker_type==="OP"?"OP":"엔지니어")+'</span></b><span class="muted small">'+esc(p.department)+' · '+esc(p.employee_no||"사번 미등록")+'</span></div><button type="button" class="danger auto" data-rm="'+i+'">삭제</button></div>';else s+='<div class="person"><div class="info"><b>'+esc(p.name)+' <span class="tag eng">외부 엔지니어</span></b><span class="muted small">'+esc(p.company)+'</span></div><button type="button" class="danger auto" data-rm="'+i+'">삭제</button></div>'});$("participants").innerHTML=s;Array.prototype.forEach.call($("participants").querySelectorAll("[data-rm]"),function(b){b.onclick=function(){participants.splice(Number(b.getAttribute("data-rm")),1);renderParticipants()}})}
-async function searchEmployees(){var q=$("employeeSearch").value.trim();var j=await post({action:"search_employees",token:token,q:q});if(!j.ok){alert(j.message);return}var rows=j.employees||[];$("searchResults").innerHTML=rows.length?rows.map(function(x,i){return '<div class="searchItem"><div class="info"><b>'+esc(x.name)+'</b><div class="muted small">'+esc(x.employee_no||"사번 미등록")+' · '+esc(x.department)+' · '+(x.worker_type==="OP"?"OP":"엔지니어")+'</div></div><button type="button" class="btn2 auto" data-add="'+i+'">추가</button></div>'}).join(""):'<div class="muted small">검색 결과가 없습니다.</div>';Array.prototype.forEach.call($("searchResults").querySelectorAll("[data-add]"),function(b){b.onclick=function(){var x=rows[Number(b.getAttribute("data-add"))];if(!participants.some(function(p){return p.kind==="employee"&&p.employee_id===x.id}))participants.push({kind:"employee",employee_id:x.id,employee_no:x.employee_no,name:x.name,department:x.department,worker_type:x.worker_type});renderParticipants()}})}
+function renderParticipants(){var s='<div class="person"><div class="info"><b>'+esc(user?user.name:"")+' <span class="tag '+(user&&user.worker_type==="OP"?"op":"eng")+'">'+(user&&user.worker_type==="OP"?"OP":"EG")+'</span></b><span class="muted small">'+esc(user?user.department:"")+' · 본인</span></div></div>';participants.forEach(function(p,i){if(p.kind==="employee")s+='<div class="person"><div class="info"><b>'+esc(p.name)+' <span class="tag '+(p.worker_type==="OP"?"op":"eng")+'">'+(p.worker_type==="OP"?"OP":"EG")+'</span></b><span class="muted small">'+esc(p.department)+' · '+esc(p.employee_no||"사번 미등록")+'</span></div><button type="button" class="danger auto" data-rm="'+i+'">삭제</button></div>';else s+='<div class="person"><div class="info"><b>'+esc(p.name)+' <span class="tag eng">외부 엔지니어</span></b><span class="muted small">'+esc(p.company)+'</span></div><button type="button" class="danger auto" data-rm="'+i+'">삭제</button></div>'});$("participants").innerHTML=s;Array.prototype.forEach.call($("participants").querySelectorAll("[data-rm]"),function(b){b.onclick=function(){participants.splice(Number(b.getAttribute("data-rm")),1);renderParticipants()}})}
+async function searchEmployees(){var q=$("employeeSearch").value.trim();var j=await post({action:"search_employees",token:token,q:q});if(!j.ok){alert(j.message);return}var rows=j.employees||[];$("searchResults").innerHTML=rows.length?rows.map(function(x,i){return '<div class="searchItem"><div class="info"><b>'+esc(x.name)+'</b><div class="muted small">'+esc(x.employee_no||"사번 미등록")+' · '+esc(x.department)+' · '+(x.worker_type==="OP"?"OP":"EG")+'</div></div><button type="button" class="btn2 auto" data-add="'+i+'">추가</button></div>'}).join(""):'<div class="muted small">검색 결과가 없습니다.</div>';Array.prototype.forEach.call($("searchResults").querySelectorAll("[data-add]"),function(b){b.onclick=function(){var x=rows[Number(b.getAttribute("data-add"))];if(!participants.some(function(p){return p.kind==="employee"&&p.employee_id===x.id}))participants.push({kind:"employee",employee_id:x.id,employee_no:x.employee_no,name:x.name,department:x.department,worker_type:x.worker_type});renderParticipants()}})}
 $("searchBtn").onclick=searchEmployees;$("employeeSearch").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();searchEmployees()}});
 $("addExternalBtn").onclick=function(){var c=$("extCompany").value.trim(),n=$("extName").value.trim();if(!c||!n){alert("업체명과 이름을 입력하세요.");return}participants.push({kind:"external",company:c,name:n});$("extName").value="";renderParticipants()};
 $("saveFavBtn").onclick=async function(){var j=await post({action:"save_preferences",token:token,companions:participants,auto_load:$("autoLoad").checked});alert(j.message||"저장 완료");if(j.ok){savedCompanions=participants.map(function(x){return JSON.parse(JSON.stringify(x))});$("favInfo").textContent="저장된 동행자 "+savedCompanions.length+"명"}};
@@ -1242,7 +1267,7 @@ function renderUsers(){
   var rows=adminUsers.filter(function(x){
     if(!q)return true;
     var role=x.role==="OWNER"?"최초 마스터":x.role==="MASTER"?"마스터(PIN)":"일반";
-    var type=x.worker_type==="OP"?"op":"엔지니어";
+    var type=x.worker_type==="OP"?"op":"eg";
     var status=x.active?"사용":"중지";
     return [x.employee_no||"",x.name||"",x.department||"",type,role,status].some(function(v){return String(v).toLowerCase().includes(q)});
   });
@@ -1253,7 +1278,7 @@ function renderUsers(){
     var st=x.role==="OWNER"?"":'<button type="button" class="'+(x.active?"danger":"okbtn")+'" data-status="'+x.id+'" data-on="'+(!x.active)+'">'+(x.active?"사용중지":"사용복구")+'</button>';
     var canDelete=x.role!=="OWNER"&&!(user.role==="MASTER"&&x.role==="MASTER");
     var del=canDelete?'<button type="button" class="danger" data-user-delete="'+x.id+'">삭제</button>':"";
-    return '<tr><td>'+no+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.department)+'</td><td>'+(x.worker_type==="OP"?"OP":"엔지니어")+'</td><td>'+role+'</td><td>'+(x.active?"사용":"중지")+'</td><td><button type="button" class="btn2" data-edit="'+x.id+'">수정</button> '+m+' '+st+' '+del+'</td></tr>';
+    return '<tr><td>'+no+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.department)+'</td><td>'+(x.worker_type==="OP"?"OP":"EG")+'</td><td>'+role+'</td><td>'+(x.active?"사용":"중지")+'</td><td><button type="button" class="btn2" data-edit="'+x.id+'">수정</button> '+m+' '+st+' '+del+'</td></tr>';
   }).join("");
   if(!rows.length)$("usersBody").innerHTML='<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">검색 결과가 없습니다.</td></tr>';
   bindUserButtons();
@@ -1266,12 +1291,22 @@ async function loadAdminDepartments(){
   fillDepartmentSelect("euDept",active,$("euDept").value);
   fillDepartmentSelect("suDept",active,$("suDept").value);
   $("departmentsBody").innerHTML=adminDepartments.length?adminDepartments.map(function(x){
-    return '<tr><td><b>'+esc(x.name)+'</b></td><td>'+num(x.user_count||0)+'명</td><td>'+(x.active?"사용":"중지")+'</td><td><button type="button" class="'+(x.active?"danger":"okbtn")+'" data-dept-toggle="'+x.id+'" data-on="'+(!x.active)+'">'+(x.active?"사용중지":"사용복구")+'</button></td></tr>';
+    var del=Number(x.user_count||0)===0?'<button type="button" class="danger" data-dept-delete="'+x.id+'" data-dept-name="'+esc(x.name)+'">삭제</button>':'';
+    return '<tr><td><b>'+esc(x.name)+'</b></td><td>'+num(x.user_count||0)+'명</td><td>'+(x.active?"사용":"중지")+'</td><td><button type="button" class="'+(x.active?"danger":"okbtn")+'" data-dept-toggle="'+x.id+'" data-on="'+(!x.active)+'">'+(x.active?"사용중지":"사용복구")+'</button> '+del+'</td></tr>';
   }).join(""):'<tr><td colspan="4">등록된 부서가 없습니다.</td></tr>';
   Array.prototype.forEach.call($("departmentsBody").querySelectorAll("[data-dept-toggle]"),function(b){
     b.onclick=async function(){
       var j=await post({action:"admin_toggle_department",token:token,id:b.getAttribute("data-dept-toggle"),active:b.getAttribute("data-on")==="true"});
       msg("deptMsg",j.message||"",j.ok);if(j.ok)loadAdminDepartments();
+    };
+  });
+  Array.prototype.forEach.call($("departmentsBody").querySelectorAll("[data-dept-delete]"),function(b){
+    b.onclick=async function(){
+      var name=b.getAttribute("data-dept-name")||"해당";
+      if(!confirm(name+" 부서를 삭제할까요?\n사용 직원이 없는 부서만 삭제할 수 있습니다."))return;
+      var j=await post({action:"admin_delete_department",token:token,id:b.getAttribute("data-dept-delete")});
+      msg("deptMsg",j.message||"",j.ok);
+      if(j.ok){await loadAdminDepartments();await loadUsers();}
     };
   });
 }
@@ -1427,7 +1462,7 @@ function filteredManualUsers(){
   var q=String($("manualEmployeeSearch").value||"").trim().toLowerCase();
   return manualUsers.filter(function(x){
     if(!q)return true;
-    return [x.employee_no||"",x.name||"",x.department||"",x.worker_type==="OP"?"op":"엔지니어"].some(function(v){return String(v).toLowerCase().includes(q)});
+    return [x.employee_no||"",x.name||"",x.department||"",x.worker_type==="OP"?"op":"eg"].some(function(v){return String(v).toLowerCase().includes(q)});
   });
 }
 function renderManualSelectionInfo(){
@@ -1437,7 +1472,7 @@ function renderManualUsers(){
   var rows=filteredManualUsers();
   $("manualEmployeeList").innerHTML=rows.length?rows.map(function(x){
     var checked=manualSelectedUsers.has(x.id)?" checked":"";
-    return '<label class="manualEmployeeItem"><input type="checkbox" data-manual-user="'+x.id+'"'+checked+'><span><b>'+esc(x.name)+'</b><small>'+esc(x.employee_no||"사번 미등록")+' · '+esc(x.department)+' · '+(x.worker_type==="OP"?"OP":"엔지니어")+'</small></span></label>';
+    return '<label class="manualEmployeeItem"><input type="checkbox" data-manual-user="'+x.id+'"'+checked+'><span><b>'+esc(x.name)+'</b><small>'+esc(x.employee_no||"사번 미등록")+' · '+esc(x.department)+' · '+(x.worker_type==="OP"?"OP":"EG")+'</small></span></label>';
   }).join(""):'<div class="muted small" style="padding:12px">검색 결과가 없습니다.</div>';
   Array.prototype.forEach.call($("manualEmployeeList").querySelectorAll("[data-manual-user]"),function(ch){
     ch.onchange=function(){if(ch.checked)manualSelectedUsers.add(ch.getAttribute("data-manual-user"));else manualSelectedUsers.delete(ch.getAttribute("data-manual-user"));renderManualSelectionInfo()};
@@ -1476,8 +1511,8 @@ $("manualRegisterBtn").onclick=async function(){
   if(j.ok){manualDates=[];manualSelectedUsers.clear();renderManualDates();renderManualUsers();await loadDashboard();await loadMonthlySummary();await loadRecords()}
 };
 
-async function loadRecords(){if(!$("rf").value){var t=todayKst();$("rf").value=t.slice(0,7)+"-01";$("rt").value=t}var j=await post({action:"admin_records",token:token,from:$("rf").value,to:$("rt").value});if(!j.ok){alert(j.message);return}adminRecords=(j.records||[]).filter(function(x){return x.restaurant_name!=="검증식당"});$("recordSummary").innerHTML=summaryTable(adminRecords);$("recordsBody").innerHTML=adminRecords.length?adminRecords.map(function(x){var g=x.person_type==="EXTERNAL"?x.external_company:x.department;return '<tr><td>'+esc(x.meal_date)+'</td><td>'+esc(mealDisplayTime(x))+'</td><td>'+esc(x.person_name)+'</td><td>'+esc(x.employee_no||"-")+'</td><td>'+esc(x.person_type==="EXTERNAL"?"외부 엔지니어":x.worker_type==="OP"?"OP":"엔지니어")+'</td><td>'+esc(g||"-")+'</td><td>'+esc(x.restaurant_name)+'</td><td>'+esc(x.period_label)+'</td><td>'+esc(x.registrant_name)+'</td><td>'+num(x.price)+'원</td><td><button type="button" class="danger" data-del="'+x.id+'">삭제</button></td></tr>'}).join(""):'<tr><td colspan="11">기록이 없습니다.</td></tr>';Array.prototype.forEach.call($("recordsBody").querySelectorAll("[data-del]"),function(b){b.onclick=function(){deleteRecord(b.getAttribute("data-del"))}})}
-$("loadRecordsBtn").onclick=loadRecords;$("downloadRecordsBtn").onclick=function(){downloadCSV(adminRecords.map(function(x){return {"일자":x.meal_date,"시간":mealDisplayTime(x),"이름":x.person_name,"사번":x.employee_no||"","구분":x.person_type==="EXTERNAL"?"외부 엔지니어":x.worker_type==="OP"?"OP":"엔지니어","부서/업체":x.person_type==="EXTERNAL"?x.external_company:x.department,"식당":x.restaurant_name,"식사":x.period_label,"등록자":x.registrant_name,"등록방식":mealSourceLabel(x),"금액":x.price}}),"FCT_식사기록_"+$("rf").value+"_"+$("rt").value+".csv")};
+async function loadRecords(){if(!$("rf").value){var t=todayKst();$("rf").value=t.slice(0,7)+"-01";$("rt").value=t}var j=await post({action:"admin_records",token:token,from:$("rf").value,to:$("rt").value});if(!j.ok){alert(j.message);return}adminRecords=(j.records||[]).filter(function(x){return x.restaurant_name!=="검증식당"});$("recordSummary").innerHTML=summaryTable(adminRecords);$("recordsBody").innerHTML=adminRecords.length?adminRecords.map(function(x){var g=x.person_type==="EXTERNAL"?x.external_company:x.department;return '<tr><td>'+esc(x.meal_date)+'</td><td>'+esc(mealDisplayTime(x))+'</td><td>'+esc(x.person_name)+'</td><td>'+esc(x.employee_no||"-")+'</td><td>'+esc(x.person_type==="EXTERNAL"?"외부 엔지니어":x.worker_type==="OP"?"OP":"EG")+'</td><td>'+esc(g||"-")+'</td><td>'+esc(x.restaurant_name)+'</td><td>'+esc(x.period_label)+'</td><td>'+esc(x.registrant_name)+'</td><td>'+num(x.price)+'원</td><td><button type="button" class="danger" data-del="'+x.id+'">삭제</button></td></tr>'}).join(""):'<tr><td colspan="11">기록이 없습니다.</td></tr>';Array.prototype.forEach.call($("recordsBody").querySelectorAll("[data-del]"),function(b){b.onclick=function(){deleteRecord(b.getAttribute("data-del"))}})}
+$("loadRecordsBtn").onclick=loadRecords;$("downloadRecordsBtn").onclick=function(){downloadCSV(adminRecords.map(function(x){return {"일자":x.meal_date,"시간":mealDisplayTime(x),"이름":x.person_name,"사번":x.employee_no||"","구분":x.person_type==="EXTERNAL"?"외부 엔지니어":x.worker_type==="OP"?"OP":"EG","부서/업체":x.person_type==="EXTERNAL"?x.external_company:x.department,"식당":x.restaurant_name,"식사":x.period_label,"등록자":x.registrant_name,"등록방식":mealSourceLabel(x),"금액":x.price}}),"FCT_식사기록_"+$("rf").value+"_"+$("rt").value+".csv")};
 async function deleteRecord(id){if(!confirm("이 식사기록을 삭제할까요?"))return;var j=await post({action:"admin_delete_record",token:token,id:id});if(!j.ok){alert(j.message);return}loadRecords();loadDashboard()}
 function summaryTable(rows){var m={};rows.forEach(function(x){var g=x.person_type==="EXTERNAL"?(x.external_company||"외부업체"):(x.department||"-"),k=x.restaurant_name+"|"+x.period_label+"|"+g;if(!m[k])m[k]={r:x.restaurant_name,p:x.period_label,g:g,c:0,a:0};m[k].c++;m[k].a+=Number(x.price||0)});var a=Object.keys(m).map(function(k){return m[k]});return '<table><thead><tr><th>식당</th><th>식사</th><th>부서/업체</th><th>식수</th><th>금액</th></tr></thead><tbody>'+(a.length?a.map(function(x){return '<tr><td>'+esc(x.r)+'</td><td>'+esc(x.p)+'</td><td>'+esc(x.g)+'</td><td>'+x.c+'</td><td>'+num(x.a)+'원</td></tr>'}).join(""):'<tr><td colspan="5">기록이 없습니다.</td></tr>')+'</tbody></table>'}
 function downloadCSV(rows,name){if(!rows.length){alert("다운로드할 데이터가 없습니다.");return}var h=Object.keys(rows[0]),lines=[h.map(csvCell).join(",")];rows.forEach(function(r){lines.push(h.map(function(k){return csvCell(r[k])}).join(","))});var blob=new Blob(["\uFEFF"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},500)}
