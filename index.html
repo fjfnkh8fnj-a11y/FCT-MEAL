@@ -770,6 +770,33 @@ html,body{max-width:100%;overflow-x:hidden}
   .table{font-size:11.5px!important}
 }
 
+
+/* rev32: admin employee instant search */
+.adminUserSearch{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  margin-top:12px;
+}
+.adminUserSearch input{
+  margin:0!important;
+}
+#adminUserSearchInfo{
+  margin-top:6px;
+  min-height:16px;
+}
+@media(max-width:800px){
+  .adminUserSearch{
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:6px;
+  }
+  .adminUserSearch .btn2{
+    padding:9px 10px!important;
+    white-space:nowrap;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -903,7 +930,7 @@ html,body{max-width:100%;overflow-x:hidden}
 <button id="saveUserBtn" type="button" class="btn" style="margin-top:12px">저장</button> <button id="clearUserBtn" type="button" class="btn2">초기화</button>
 <div class="sep"></div><h3>직원 Excel 일괄등록</h3><p class="muted small">Excel 양식의 사번 / 이름 / 부서 / 구분을 사용합니다. 사번 미발급 직원은 사번 칸을 비워두면 됩니다.</p><input id="employeeFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"><div class="row" style="margin-top:10px"><button id="employeeTemplateBtn" type="button" class="btn2">Excel 등록양식 다운로드</button><button id="employeeExportBtn" type="button" class="btn2">직원목록 Excel 다운로드</button></div>
 </div>
-<div class="card"><div class="row"><h2 style="margin:0">직원 목록</h2><button id="reloadUsersBtn" type="button" class="btn2 auto">새로고침</button></div><div id="employeeStats" class="statbar"></div><div class="table" style="margin-top:12px"><table><thead><tr><th>사번</th><th>이름</th><th>부서</th><th>구분</th><th>권한</th><th>상태</th><th>관리</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
+<div class="card"><div class="row"><h2 style="margin:0">직원 목록</h2><button id="reloadUsersBtn" type="button" class="btn2 auto">새로고침</button></div><div id="employeeStats" class="statbar"></div><div class="adminUserSearch"><input id="adminUserSearch" type="search" placeholder="이름 · 사번 · 부서 검색" autocomplete="off"><button id="clearAdminUserSearch" type="button" class="btn2 auto">초기화</button></div><div id="adminUserSearchInfo" class="muted small"></div><div class="table" style="margin-top:10px"><table><thead><tr><th>사번</th><th>이름</th><th>부서</th><th>구분</th><th>권한</th><th>상태</th><th>관리</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
 </div></div>
 
 <div id="tab-restaurants" class="adminPanel">
@@ -1109,10 +1136,36 @@ Array.prototype.forEach.call($("adminTabs").querySelectorAll("[data-tab]"),funct
 function adminTab(n){Array.prototype.forEach.call($("adminTabs").querySelectorAll("[data-tab]"),function(b){b.classList.toggle("on",b.getAttribute("data-tab")===n)});Array.prototype.forEach.call(document.querySelectorAll(".adminPanel"),function(p){p.classList.remove("on")});$("tab-"+n).classList.add("on");if(n==="users")loadUsers();if(n==="restaurants")loadRestaurants();if(n==="records"){loadMonthlySummary();loadRecords();}if(n==="settings"){loadPeriods();loadCalendarSettings()}}
 function todayKst(){return new Date(Date.now()+9*3600000).toISOString().slice(0,10)}function num(n){return new Intl.NumberFormat("ko-KR").format(n||0)}
 async function loadDashboard(){var t=todayKst(),f=t.slice(0,7)+"-01",j=await post({action:"admin_records",token:token,from:f,to:t});if(!j.ok)return;adminRecords=j.records||[];var today=adminRecords.filter(function(x){return x.meal_date===t}),amt=adminRecords.reduce(function(s,x){return s+Number(x.price||0)},0),labels={};today.forEach(function(x){labels[x.period_label]=(labels[x.period_label]||0)+1});$("kpis").innerHTML=[["오늘 총 식수",today.length+"식"],["오늘 점심",(labels["점심"]||0)+"식"],["오늘 저녁",(labels["저녁"]||0)+"식"],["오늘 아침/야식",((labels["아침"]||0)+(labels["야식"]||0))+"식"],["이번달 예상 식대",num(amt)+"원"]].map(function(x){return '<div class="kpi"><span class="muted small">'+x[0]+'</span><b>'+x[1]+'</b></div>'}).join("");$("dashSummary").innerHTML=summaryTable(adminRecords)}
-async function loadUsers(){var j=await post({action:"admin_users",token:token});if(!j.ok){alert(j.message);return}adminUsers=j.users||[];var activeUsers=adminUsers.filter(function(x){return x.active}),noCount=activeUsers.filter(function(x){return !x.employee_no}).length;$("employeeStats").innerHTML='<div class="statbox"><span class="muted small">등록 직원</span><b>'+activeUsers.length+'명</b></div><div class="statbox"><span class="muted small">사번 등록</span><b>'+(activeUsers.length-noCount)+'명</b></div><div class="statbox"><span class="muted small">사전등록 · 사번 미등록</span><b>'+noCount+'명</b></div>';$("usersBody").innerHTML=adminUsers.map(function(x){var role=x.role==="OWNER"?"최초 마스터":x.role==="MASTER"?"마스터":"일반",m="",no=x.employee_no?esc(x.employee_no):'<span class="tag">사번 미등록</span>';if(user.role==="OWNER"&&x.role!=="OWNER"&&x.employee_no)m=x.role==="MASTER"?'<button type="button" class="danger" data-revoke="'+x.id+'">마스터 해제</button>':'<button type="button" class="okbtn" data-grant="'+x.id+'">마스터 지정</button>';var st=x.role==="OWNER"?"":'<button type="button" class="'+(x.active?"danger":"okbtn")+'" data-status="'+x.id+'" data-on="'+(!x.active)+'">'+(x.active?"사용중지":"사용복구")+'</button>';return '<tr><td>'+no+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.department)+'</td><td>'+(x.worker_type==="OP"?"OP":"엔지니어")+'</td><td>'+role+'</td><td>'+(x.active?"사용":"중지")+'</td><td><button type="button" class="btn2" data-edit="'+x.id+'">수정</button> '+m+' '+st+'</td></tr>'}).join("");bindUserButtons()}
+function renderUsers(){
+  var q=String($("adminUserSearch")?.value||"").trim().toLowerCase();
+  var rows=adminUsers.filter(function(x){
+    if(!q)return true;
+    var role=x.role==="OWNER"?"최초 마스터":x.role==="MASTER"?"마스터":"일반";
+    var type=x.worker_type==="OP"?"op":"엔지니어";
+    var status=x.active?"사용":"중지";
+    return [x.employee_no||"",x.name||"",x.department||"",type,role,status].some(function(v){return String(v).toLowerCase().includes(q)});
+  });
+  $("adminUserSearchInfo").textContent=q?"전체 "+adminUsers.length+"명 중 검색결과 "+rows.length+"명":"전체 "+adminUsers.length+"명";
+  $("usersBody").innerHTML=rows.map(function(x){
+    var role=x.role==="OWNER"?"최초 마스터":x.role==="MASTER"?"마스터":"일반",m="",no=x.employee_no?esc(x.employee_no):'<span class="tag">사번 미등록</span>';
+    if(user.role==="OWNER"&&x.role!=="OWNER"&&x.employee_no)m=x.role==="MASTER"?'<button type="button" class="danger" data-revoke="'+x.id+'">마스터 해제</button>':'<button type="button" class="okbtn" data-grant="'+x.id+'">마스터 지정</button>';
+    var st=x.role==="OWNER"?"":'<button type="button" class="'+(x.active?"danger":"okbtn")+'" data-status="'+x.id+'" data-on="'+(!x.active)+'">'+(x.active?"사용중지":"사용복구")+'</button>';
+    return '<tr><td>'+no+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.department)+'</td><td>'+(x.worker_type==="OP"?"OP":"엔지니어")+'</td><td>'+role+'</td><td>'+(x.active?"사용":"중지")+'</td><td><button type="button" class="btn2" data-edit="'+x.id+'">수정</button> '+m+' '+st+'</td></tr>';
+  }).join("");
+  if(!rows.length)$("usersBody").innerHTML='<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">검색 결과가 없습니다.</td></tr>';
+  bindUserButtons();
+}
+async function loadUsers(){
+  var j=await post({action:"admin_users",token:token});
+  if(!j.ok){alert(j.message);return}
+  adminUsers=j.users||[];
+  var activeUsers=adminUsers.filter(function(x){return x.active}),noCount=activeUsers.filter(function(x){return !x.employee_no}).length;
+  $("employeeStats").innerHTML='<div class="statbox"><span class="muted small">등록 직원</span><b>'+activeUsers.length+'명</b></div><div class="statbox"><span class="muted small">사번 등록</span><b>'+(activeUsers.length-noCount)+'명</b></div><div class="statbox"><span class="muted small">사전등록 · 사번 미등록</span><b>'+noCount+'명</b></div>';
+  renderUsers();
+}
 function bindUserButtons(){Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-edit]"),function(b){b.onclick=function(){editUser(b.getAttribute("data-edit"))}});Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-grant]"),function(b){b.onclick=function(){setMaster(b.getAttribute("data-grant"),true)}});Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-revoke]"),function(b){b.onclick=function(){setMaster(b.getAttribute("data-revoke"),false)}});Array.prototype.forEach.call($("usersBody").querySelectorAll("[data-status]"),function(b){b.onclick=function(){toggleUser(b.getAttribute("data-status"),b.getAttribute("data-on")==="true")}})}
 function clearUserForm(){$("euId").value="";$("euNo").value="";$("euNo").disabled=false;$("euName").value=""}function editUser(id){var x=adminUsers.find(function(y){return y.id===id});if(!x)return;$("euId").value=x.id;$("euNo").value=x.employee_no||"";$("euNo").disabled=x.role==="OWNER";$("euName").value=x.name;$("euDept").value=x.department;$("euType").value=x.worker_type}
-$("clearUserBtn").onclick=clearUserForm;$("reloadUsersBtn").onclick=loadUsers;
+$("clearUserBtn").onclick=clearUserForm;$("reloadUsersBtn").onclick=loadUsers;$("adminUserSearch").oninput=renderUsers;$("clearAdminUserSearch").onclick=function(){$("adminUserSearch").value="";renderUsers();$("adminUserSearch").focus()};
 $("saveUserBtn").onclick=async function(){var id=$("euId").value,x=id?adminUsers.find(function(y){return y.id===id}):null;var j=await post({action:"admin_save_user",token:token,id:id,employee_no:$("euNo").value,name:$("euName").value,department:$("euDept").value,worker_type:$("euType").value,active:x?x.active:true});if(!j.ok){alert(j.message);return}alert(j.message||"저장했습니다.");clearUserForm();loadUsers()};
 async function toggleUser(id,on){var x=adminUsers.find(function(y){return y.id===id});if(!x)return;var j=await post({action:"admin_save_user",token:token,id:x.id,employee_no:x.employee_no,name:x.name,department:x.department,worker_type:x.worker_type,active:on});if(!j.ok)alert(j.message);loadUsers()}
 async function setMaster(id,on){var pin="";if(on){pin=prompt("신규 마스터 임시 PIN(숫자 4~8자리)")||"";if(!pin)return}var j=await post({action:"owner_set_master",token:token,id:id,enabled:on,pin:pin});alert(j.message||"완료");if(j.ok)loadUsers()}
