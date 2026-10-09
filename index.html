@@ -910,6 +910,11 @@ html,body{max-width:100%;overflow-x:hidden}
   .mealDateGroup td{top:40px}
 }
 
+
+/* rev41: safe restaurant deletion */
+.restaurantActions{gap:6px;flex-wrap:wrap}
+.restaurantActions .danger{white-space:nowrap}
+
 </style>
 </head>
 <body>
@@ -1103,7 +1108,7 @@ html,body{max-width:100%;overflow-x:hidden}
 </div>
 
 <div id="tab-restaurants" class="adminPanel">
-<div class="card"><h2>식당 등록 / 수정</h2><input id="erId" type="hidden"><label>식당명</label><input id="erName"><div id="priceFields" class="priceGrid"></div><button id="saveRestaurantBtn" type="button" class="btn" style="margin-top:12px">저장</button> <button id="clearRestaurantBtn" type="button" class="btn2">초기화</button><p class="muted small">식당을 저장하면 고정 QR이 자동 생성됩니다.</p></div>
+<div class="card"><h2>식당 등록 / 수정</h2><input id="erId" type="hidden"><label>식당명</label><input id="erName"><div id="priceFields" class="priceGrid"></div><button id="saveRestaurantBtn" type="button" class="btn" style="margin-top:12px">저장</button> <button id="clearRestaurantBtn" type="button" class="btn2">초기화</button><p class="muted small">식당을 저장하면 고정 QR이 자동 생성됩니다. 삭제해도 과거 식사기록·정산내역은 유지됩니다.</p></div>
 <div id="restaurantCards" class="grid g3" style="margin-top:12px"></div>
 <div class="card" style="margin-top:12px">
 <h2>식당 로그인 ID 관리</h2><p class="muted small">마스터가 식당별 로그인 ID를 생성·수정·사용중지할 수 있습니다. 식당 로그인 사용자는 연결된 자기 식당의 월간 집계와 Excel만 조회할 수 있습니다.</p>
@@ -1543,7 +1548,7 @@ $("employeeExportBtn").onclick=function(){getXlsx("admin_employee_export_xlsx")}
 $("employeeFile").onchange=async function(){var f=this.files&&this.files[0];if(!f)return;var name=f.name.toLowerCase(),j;if(name.endsWith(".xlsx")||name.endsWith(".xls")){var base64=await fileToBase64(f);j=await post({action:"admin_bulk_users_xlsx",token:token,base64:base64})}else{var rows=parseCSV(await f.text());j=await post({action:"admin_bulk_users",token:token,rows:rows})}alert(j.ok?("신규 "+j.created+"명 / 수정 "+j.updated+"명 / 제외 "+j.skipped+"명"):j.message);this.value="";loadUsers()};
 function parseCSV(t){var text=String(t||"").replace(/^\uFEFF/,"").replace(/\r/g,"");var lines=text.split("\n").filter(function(x){return x.trim()!==""});if(!lines.length)return[];function row(line){var out=[],s="",q=false;for(var i=0;i<line.length;i++){var ch=line[i];if(ch==='"'){if(q&&line[i+1]==='"'){s+='"';i++}else q=!q}else if(ch===","&&!q){out.push(s);s=""}else s+=ch}out.push(s);return out}var h=row(lines[0]).map(function(x){return x.trim()});return lines.slice(1).map(function(l){var v=row(l),o={};h.forEach(function(k,i){o[k]=(v[i]||"").trim()});return o})}
 
-async function loadRestaurants(){var j=await post({action:"admin_restaurants",token:token});if(!j.ok){alert(j.message);return}adminRestaurants=(j.restaurants||[]).filter(function(r){return r.name!=="검증식당"});adminPeriods=j.periods||[];renderPriceFields();$("restaurantCards").innerHTML=adminRestaurants.map(function(r){var qr=QRAPI+"?qr="+encodeURIComponent(r.id),target=SITE_BASE+"?restaurant="+encodeURIComponent(r.id);return '<div class="qrcard"><div class="row"><div><b>'+esc(r.name)+'</b><div class="muted small">'+esc(target)+'</div></div><span class="tag">'+(r.active?"사용중":"중지")+'</span></div><img class="qrimg" alt="식당 QR" src="'+esc(qr)+'"><div class="row"><button type="button" class="btn2" data-er="'+r.id+'">수정</button><button type="button" class="btn2" data-qr="'+r.id+'">QR 크게보기</button><button type="button" class="'+(r.active?"danger":"okbtn")+'" data-rt="'+r.id+'" data-on="'+(!r.active)+'">'+(r.active?"사용중지":"사용")+'</button></div></div>'}).join("");bindRestaurantButtons();await loadVendorAccounts()}
+async function loadRestaurants(){var j=await post({action:"admin_restaurants",token:token});if(!j.ok){alert(j.message);return}adminRestaurants=(j.restaurants||[]).filter(function(r){return r.name!=="검증식당"});adminPeriods=j.periods||[];renderPriceFields();$("restaurantCards").innerHTML=adminRestaurants.map(function(r){var qr=QRAPI+"?qr="+encodeURIComponent(r.id),target=SITE_BASE+"?restaurant="+encodeURIComponent(r.id);return '<div class="qrcard"><div class="row"><div><b>'+esc(r.name)+'</b><div class="muted small">'+esc(target)+'</div></div><span class="tag">'+(r.active?"사용중":"중지")+'</span></div><img class="qrimg" alt="식당 QR" src="'+esc(qr)+'"><div class="row restaurantActions"><button type="button" class="btn2" data-er="'+r.id+'">수정</button><button type="button" class="btn2" data-qr="'+r.id+'">QR 크게보기</button><button type="button" class="'+(r.active?"danger":"okbtn")+'" data-rt="'+r.id+'" data-on="'+(!r.active)+'">'+(r.active?"사용중지":"사용")+'</button><button type="button" class="danger" data-rdel="'+r.id+'">삭제</button></div></div>'}).join("");bindRestaurantButtons();await loadVendorAccounts()}
 async function loadVendorAccounts(){var j=await post({action:"admin_vendor_accounts",token:token});if(!j.ok){alert(j.message);return}adminVendorAccounts=j.accounts||[];var rs=(j.restaurants||[]).filter(function(r){return r.name!=="검증식당"});$("vaRestaurant").innerHTML=rs.map(function(r){return '<option value="'+esc(r.id)+'">'+esc(r.name)+'</option>'}).join("");$("vendorAccountsBody").innerHTML=adminVendorAccounts.length?adminVendorAccounts.map(function(v){return '<tr><td><b>'+esc(v.vendor_code)+'</b></td><td>'+esc(v.display_name||"-")+'</td><td>'+esc(v.restaurant_name)+'</td><td>'+(v.active?"사용":"중지")+'</td><td><button type="button" class="btn2" data-va-edit="'+v.id+'">수정</button> <button type="button" class="'+(v.active?"danger":"okbtn")+'" data-va-toggle="'+v.id+'" data-on="'+(!v.active)+'">'+(v.active?"사용중지":"사용복구")+'</button></td></tr>'}).join(""):'<tr><td colspan="5">등록된 식당 로그인 ID가 없습니다.</td></tr>';bindVendorAccountButtons()}
 function clearVendorForm(){$("vaId").value="";$("vaCode").value="";$("vaName").value="";if($("vaRestaurant").options.length)$("vaRestaurant").selectedIndex=0}
 function bindVendorAccountButtons(){Array.prototype.forEach.call($("vendorAccountsBody").querySelectorAll("[data-va-edit]"),function(b){b.onclick=function(){var v=adminVendorAccounts.find(function(x){return x.id===b.getAttribute("data-va-edit")});if(!v)return;$("vaId").value=v.id;$("vaCode").value=v.vendor_code;$("vaName").value=v.display_name||"";$("vaRestaurant").value=v.restaurant_id}});Array.prototype.forEach.call($("vendorAccountsBody").querySelectorAll("[data-va-toggle]"),function(b){b.onclick=async function(){var j=await post({action:"admin_toggle_vendor",token:token,id:b.getAttribute("data-va-toggle"),active:b.getAttribute("data-on")==="true"});if(!j.ok)alert(j.message);loadVendorAccounts()}})}
@@ -1551,10 +1556,25 @@ $("clearVendorBtn").onclick=clearVendorForm;
 $("saveVendorBtn").onclick=async function(){var id=$("vaId").value,v=adminVendorAccounts.find(function(x){return x.id===id}),j=await post({action:"admin_save_vendor",token:token,id:id,vendor_code:$("vaCode").value,display_name:$("vaName").value,restaurant_id:$("vaRestaurant").value,active:v?v.active:true});alert(j.message||"저장 완료");if(j.ok){clearVendorForm();loadVendorAccounts()}};
 
 function renderPriceFields(){var src=adminPeriods.length?adminPeriods:[{code:"BREAKFAST",label:"아침"},{code:"LUNCH",label:"점심"},{code:"DINNER",label:"저녁"},{code:"LATE_NIGHT",label:"야식"}];$("priceFields").innerHTML=src.map(function(p){return '<div><label>'+esc(p.label)+' 단가</label><input type="number" min="0" id="price_'+p.code+'" value="0"></div>'}).join("")}
-function bindRestaurantButtons(){Array.prototype.forEach.call($("restaurantCards").querySelectorAll("[data-er]"),function(b){b.onclick=function(){editRestaurant(b.getAttribute("data-er"))}});Array.prototype.forEach.call($("restaurantCards").querySelectorAll("[data-qr]"),function(b){b.onclick=function(){window.open(QRAPI+"?qr="+encodeURIComponent(b.getAttribute("data-qr")),"_blank")}});Array.prototype.forEach.call($("restaurantCards").querySelectorAll("[data-rt]"),function(b){b.onclick=function(){toggleRestaurant(b.getAttribute("data-rt"),b.getAttribute("data-on")==="true")}})}
+function bindRestaurantButtons(){
+  Array.prototype.forEach.call($("restaurantCards").querySelectorAll("[data-er]"),function(b){b.onclick=function(){editRestaurant(b.getAttribute("data-er"))}});
+  Array.prototype.forEach.call($("restaurantCards").querySelectorAll("[data-qr]"),function(b){b.onclick=function(){window.open(QRAPI+"?qr="+encodeURIComponent(b.getAttribute("data-qr")),"_blank")}});
+  Array.prototype.forEach.call($("restaurantCards").querySelectorAll("[data-rt]"),function(b){b.onclick=function(){toggleRestaurant(b.getAttribute("data-rt"),b.getAttribute("data-on")==="true")}});
+  Array.prototype.forEach.call($("restaurantCards").querySelectorAll("[data-rdel]"),function(b){b.onclick=function(){deleteRestaurant(b.getAttribute("data-rdel"))}});
+}
 function clearRestaurant(){$("erId").value="";$("erName").value="";adminPeriods.forEach(function(p){var e=$("price_"+p.code);if(e)e.value=0})}$("clearRestaurantBtn").onclick=clearRestaurant;
 function editRestaurant(id){var r=adminRestaurants.find(function(x){return x.id===id});if(!r)return;$("erId").value=r.id;$("erName").value=r.name;adminPeriods.forEach(function(p){var e=$("price_"+p.code);if(e)e.value=Number((r.prices||{})[p.code]||0)})}
 $("saveRestaurantBtn").onclick=async function(){var prices={};adminPeriods.forEach(function(p){var e=$("price_"+p.code);prices[p.code]=e?Number(e.value||0):0});var j=await post({action:"admin_save_restaurant",token:token,id:$("erId").value,name:$("erName").value,prices:prices});if(!j.ok){alert(j.message);return}clearRestaurant();loadRestaurants()};async function toggleRestaurant(id,on){var j=await post({action:"admin_toggle_restaurant",token:token,id:id,active:on});if(!j.ok)alert(j.message);loadRestaurants()}
+async function deleteRestaurant(id){
+  var r=adminRestaurants.find(function(x){return x.id===id});if(!r)return;
+  if(!confirm(r.name+" 식당을 삭제할까요?\n\n식당 목록·QR·식당 로그인에서는 제거되고, 과거 식사기록과 정산내역은 유지됩니다."))return;
+  var j=await post({action:"admin_delete_restaurant",token:token,id:id});
+  if(!j.ok){alert(j.message);return}
+  if($("erId").value===id)clearRestaurant();
+  alert(j.message||"식당을 삭제했습니다.");
+  await loadRestaurants();
+  if($("rmMonth").value)await loadMonthlySummary();
+}
 
 async function loadCalendarSettings(){var month=$("calMonth").value||todayKst().slice(0,7),j=await post({action:"admin_calendar_month",token:token,month:month});if(!j.ok){msg("calendarStatusMsg",j.message,false);return}adminCalendar=j.days||[];renderCalendarSettings()}
 function renderCalendarSettings(){$("calendarBody").innerHTML=adminCalendar.map(function(d,i){var base=d.holiday_label?"공휴일":d.sunday?"일요일":d.saturday?"토요일":"평일",cls=d.holiday_label?"day-holiday":d.sunday?"day-sun":d.saturday?"day-sat":d.blocked?"day-blocked":"";var status=d.blocked?"식사불가":"식사가능";return '<tr class="'+cls+'"><td>'+esc(d.date)+'</td><td>'+esc(d.weekday)+'</td><td><b>'+base+'</b></td><td><input id="calHoliday_'+i+'" value="'+esc(d.holiday_label||"")+'" placeholder="공휴일이 아니면 공란"></td><td><select id="calOverride_'+i+'"><option value="" '+(!d.override_mode?"selected":"")+'>기본 규칙</option><option value="ALLOW" '+(d.override_mode==="ALLOW"?"selected":"")+'>식사가능</option><option value="BLOCK" '+(d.override_mode==="BLOCK"?"selected":"")+'>식사불가</option></select></td><td><input id="calNote_'+i+'" value="'+esc(d.note||"")+'" placeholder="선택 입력"></td><td><b>'+status+'</b></td></tr>'}).join("")}
@@ -1574,7 +1594,7 @@ async function loadMonthlySummary(){
   var j=await post({action:"admin_monthly_summary",token:token,month:month,restaurant_id:rid});
   if(!j.ok){alert(j.message);return}
   monthlySummary=j;
-  var current=$("rmRestaurant").value,opts=['<option value="">전체 식당</option>'].concat((j.restaurant_options||[]).map(function(r){return '<option value="'+esc(r.id)+'">'+esc(r.name)+(r.active?'':' (중지)')+'</option>'}));
+  var current=$("rmRestaurant").value,opts=['<option value="">전체 식당</option>'].concat((j.restaurant_options||[]).map(function(r){return '<option value="'+esc(r.id)+'">'+esc(r.name)+(r.deleted?' (삭제)':r.active?'':' (중지)')+'</option>'}));
   $("rmRestaurant").innerHTML=opts.join("");$("rmRestaurant").value=current||"";
   $("monthlyKpis").innerHTML=[
     ["전체 총 식수",j.grand_total_count+"식"],
