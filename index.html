@@ -963,6 +963,196 @@ html,body{max-width:100%;overflow-x:hidden}
   .userCalendarFootnote{margin-top:7px;padding-top:7px;font-size:9px;line-height:1.35}
 }
 
+
+/* rev43: iPhone/mobile horizontal overflow hard-fix */
+html,body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden!important;
+}
+body,header,main,section,.card,.userStack,#userView,#adminView{
+  min-width:0!important;
+  max-width:100%!important;
+}
+main{
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+.row,.row>*,
+.brandCluster,.head,
+.userCalendarHead,.userCalendarControls,
+.userCalendarWeek,.userCalendarGrid,.userCalCell{
+  min-width:0!important;
+}
+.table{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+  -webkit-overflow-scrolling:touch;
+}
+.notice,.ok,.err,.muted,.person .info{
+  min-width:0!important;
+  overflow-wrap:anywhere;
+  word-break:keep-all;
+}
+
+@media(max-width:800px){
+  header{
+    width:100%!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+  .head{
+    width:100%!important;
+    max-width:100%!important;
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    overflow:hidden!important;
+  }
+  .brandCluster{
+    flex:1 1 0!important;
+    width:auto!important;
+    overflow:hidden!important;
+  }
+  .headerLogoSvg{
+    width:188px!important;
+    max-width:52vw!important;
+    flex:0 1 auto!important;
+  }
+  .who{
+    flex:0 1 112px!important;
+    width:auto!important;
+    max-width:112px!important;
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  main{
+    margin:10px 0 0!important;
+    padding-left:8px!important;
+    padding-right:8px!important;
+    padding-bottom:calc(44px + env(safe-area-inset-bottom))!important;
+  }
+  #userView,.userStack,.card{
+    width:100%!important;
+    max-width:100%!important;
+  }
+
+  .row:not(.mobile)>input,
+  .row:not(.mobile)>select{
+    flex:1 1 0!important;
+    width:0!important;
+    min-width:0!important;
+  }
+  .row.mobile{
+    width:100%!important;
+    max-width:100%!important;
+  }
+  .row.mobile>*{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    flex:1 1 100%!important;
+  }
+
+  .userCalendarHead{
+    display:block!important;
+    width:100%!important;
+  }
+  .userCalendarControls{
+    display:grid!important;
+    grid-template-columns:42px minmax(0,1fr) 42px!important;
+    gap:6px!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin-top:10px!important;
+  }
+  .userCalendarControls button{
+    width:42px!important;
+    min-width:42px!important;
+    max-width:42px!important;
+    padding:0!important;
+  }
+  .userCalendarControls input{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  .userCalendarWeek,.userCalendarGrid{
+    width:100%!important;
+    max-width:100%!important;
+    grid-template-columns:repeat(7,minmax(0,1fr))!important;
+    gap:2px!important;
+  }
+  .userCalendarWeek span{
+    min-width:0!important;
+    padding:2px 0!important;
+    font-size:10px!important;
+  }
+  .userCalCell{
+    width:auto!important;
+    max-width:100%!important;
+    min-height:50px!important;
+    padding:3px 2px!important;
+    border-radius:6px!important;
+  }
+  .userCalDate b{font-size:10px!important}
+  .userCalStatus{
+    font-size:7px!important;
+    line-height:1.05!important;
+    margin-top:2px!important;
+    white-space:normal!important;
+    overflow:visible!important;
+  }
+  .myMealChip{
+    min-width:0!important;
+    max-width:100%!important;
+    margin-top:2px!important;
+    padding:2px 1px!important;
+  }
+  .myMealChip b{
+    font-size:7px!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .userCalendarLegend{
+    width:100%!important;
+    max-width:100%!important;
+    gap:7px!important;
+    font-size:9px!important;
+  }
+  .userCalendarFootnote{
+    max-width:100%!important;
+    font-size:9px!important;
+    line-height:1.4!important;
+    overflow-wrap:anywhere!important;
+  }
+
+  .receiptModalPanel{
+    width:calc(100vw - 20px)!important;
+    max-width:calc(100vw - 20px)!important;
+  }
+}
+@media(max-width:390px){
+  .headerLogoSvg{
+    width:170px!important;
+    max-width:50vw!important;
+  }
+  .who{
+    flex-basis:96px!important;
+    max-width:96px!important;
+  }
+  .userCalCell{
+    min-height:46px!important;
+  }
+}
+
 </style>
 </head>
 <body>
