@@ -280,6 +280,63 @@ header{min-height:78px!important;overflow:visible!important}
   .visualLogoMark{width:190px!important;max-width:70vw!important}
 }
 
+
+/* rev23: one header logo only + visual copy at photo bottom-right */
+.headerLogoMark{
+  width:300px!important;
+  height:63px!important;
+  max-width:none!important;
+  aspect-ratio:auto!important;
+  background-image:url("./assets/fct-logo.png?rev=23")!important;
+  background-size:contain!important;
+  background-repeat:no-repeat!important;
+  background-position:left center!important;
+}
+.authLogoMark,.visualLogoBox,.visualLogoMark{display:none!important}
+.authVisualContent{
+  position:absolute!important;
+  left:auto!important;
+  right:28px!important;
+  bottom:24px!important;
+  width:auto!important;
+  max-width:calc(100% - 48px)!important;
+  z-index:3!important;
+  text-align:right!important;
+}
+.authVisualContent h1{
+  margin:0!important;
+  color:#fff!important;
+  font-size:clamp(14px,2.1vw,26px)!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+  letter-spacing:-.035em!important;
+  text-shadow:0 3px 16px rgba(0,0,0,.32)!important;
+}
+.visualValues{
+  position:absolute!important;
+  left:28px!important;
+  bottom:24px!important;
+  z-index:3!important;
+  margin:0!important;
+}
+.authBrand{padding-top:0!important}
+@media(max-width:800px){
+  .headerLogoMark{
+    width:205px!important;
+    height:43px!important;
+    max-width:58vw!important;
+  }
+  .authVisualContent{
+    right:16px!important;
+    bottom:18px!important;
+    max-width:calc(100% - 32px)!important;
+  }
+  .authVisualContent h1{
+    font-size:clamp(13px,3.35vw,18px)!important;
+  }
+  .visualValues{display:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -290,18 +347,15 @@ header{min-height:78px!important;overflow:visible!important}
   <div class="authVisual">
     <div class="authVisualOverlay"></div>
     <div class="authVisualContent">
-      <div class="visualLogoBox"><div class="visualLogoMark" role="img" aria-label="FCT (주) 화인세라텍"></div></div>
-      <h1>세라믹 소재 기술력을 바탕으로<br>혁신을 선도하는 기업</h1>
-      
-      <div class="visualValues">
-        <span>창의와 도전</span><span>변화와 혁신</span><span>신뢰와 존중</span>
-      </div>
+      <h1>세라믹 소재 기술력을 바탕으로 혁신을 선도하는 기업</h1>
+    </div>
+    <div class="visualValues">
+      <span>창의와 도전</span><span>변화와 혁신</span><span>신뢰와 존중</span>
     </div>
   </div>
 
   <div class="card authCard">
     <div class="authBrand">
-      <div class="authLogoMark" role="img" aria-label="FCT (주) 화인세라텍"></div>
       <h1>식사관리 시스템</h1>
       <p>FCT Meal Management</p>
     </div>
