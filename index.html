@@ -426,10 +426,39 @@ header{min-height:78px!important;overflow:visible!important}
   .heroDots button.on{width:20px}
 }
 
+
+/* rev26: exact AI logo + first-slide sign visibility */
+.headerLogoSvg{
+  content:url("./assets/fct-logo-ai-horizontal.svg?rev=26")!important;
+  width:320px!important;
+  max-width:54vw!important;
+  height:auto!important;
+  object-fit:contain!important;
+}
+.authSlideBg.slide1{
+  background-position:50% 12%!important;
+  transform:scale(1)!important;
+}
+.authSlideBg.slide2{
+  background-position:50% 24%!important;
+}
+.authSlideBg.slide3{
+  background-position:50% 42%!important;
+}
+@media(max-width:800px){
+  .headerLogoSvg{
+    width:220px!important;
+    max-width:62vw!important;
+  }
+  .authSlideBg.slide1{
+    background-position:50% 8%!important;
+  }
+}
+
 </style>
 </head>
 <body>
-<header><div class="head"><div class="brandCluster"><img class="headerLogoSvg" src="./assets/fct-logo-header.svg?rev=24" alt="FCT (주) 화인세라텍"><div class="brandTitle"><b>식사관리 시스템</b><span>FCT Meal Management</span></div></div><div id="who" class="who">로그인 전</div></div></header>
+<header><div class="head"><div class="brandCluster"><img class="headerLogoSvg" src="./assets/fct-logo-ai-horizontal.svg?rev=26" alt="FCT (주) 화인세라텍"><div class="brandTitle"><b>식사관리 시스템</b><span>FCT Meal Management</span></div></div><div id="who" class="who">로그인 전</div></div></header>
 <main>
 <section id="authView" class="auth">
 <div class="authShell">
