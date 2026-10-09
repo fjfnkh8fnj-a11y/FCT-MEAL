@@ -337,14 +337,55 @@ header{min-height:78px!important;overflow:visible!important}
   .visualValues{display:none!important}
 }
 
+
+/* rev24: redrawn vector header logo + stronger exterior photo */
+.headerLogoMark{display:none!important}
+.headerLogoSvg{
+  display:block!important;
+  width:310px!important;
+  height:auto!important;
+  max-width:52vw!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  flex:0 0 auto!important;
+}
+.authVisual{
+  background:linear-gradient(135deg,#102c69,#174b9f)!important;
+}
+.authPhoto{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  background:url("https://cdn.sisajournal-e.com/news/photo/202311/305454_130352_4926.jpg") center/cover no-repeat!important;
+  filter:contrast(1.22) saturate(1.18) brightness(.88)!important;
+  transform:scale(1.005)!important;
+}
+.authVisualOverlay{
+  z-index:1!important;
+  background:linear-gradient(180deg,rgba(5,20,55,.03),rgba(5,20,55,.22))!important;
+}
+.authVisualContent,.visualValues{z-index:3!important}
+@media(max-width:800px){
+  .headerLogoSvg{
+    width:215px!important;
+    max-width:60vw!important;
+    height:auto!important;
+  }
+}
+
 </style>
 </head>
 <body>
-<header><div class="head"><div class="brandCluster"><div class="headerLogoMark" role="img" aria-label="FCT (주) 화인세라텍"></div><div class="brandTitle"><b>식사관리 시스템</b><span>FCT Meal Management</span></div></div><div id="who" class="who">로그인 전</div></div></header>
+<header><div class="head"><div class="brandCluster"><img class="headerLogoSvg" src="./assets/fct-logo-header.svg?rev=24" alt="FCT (주) 화인세라텍"><div class="brandTitle"><b>식사관리 시스템</b><span>FCT Meal Management</span></div></div><div id="who" class="who">로그인 전</div></div></header>
 <main>
 <section id="authView" class="auth">
 <div class="authShell">
   <div class="authVisual">
+    <div class="authPhoto" aria-hidden="true"></div>
     <div class="authVisualOverlay"></div>
     <div class="authVisualContent">
       <h1>세라믹 소재 기술력을 바탕으로 혁신을 선도하는 기업</h1>
