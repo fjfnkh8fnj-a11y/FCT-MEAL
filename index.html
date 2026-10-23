@@ -1154,6 +1154,34 @@ main{
 }
 
 
+/* rev46: role-based help modal */
+.helpModalPanel{width:min(680px,100%)}
+.helpPopup{padding:22px 22px 14px;overflow:auto;background:#fff}
+.helpHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.helpHeader h2{margin:0;font-size:24px;color:#10224a}
+.helpHeader p{margin:4px 0 0;font-size:12px;color:var(--sub)}
+.helpCloseX{border:0;background:#eef2f6;color:#334155;border-radius:10px;width:38px;height:38px;font-size:22px;font-weight:900;flex:0 0 auto}
+.helpTabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px;-webkit-overflow-scrolling:touch}
+.helpTabs button{white-space:nowrap;border:1px solid var(--line);background:#fff;color:#334155;border-radius:10px;padding:9px 12px;font-weight:800}
+.helpTabs button.on{background:var(--b);color:#fff;border-color:var(--b)}
+.helpGuide{display:grid;gap:9px}
+.helpGuideIntro{padding:10px 12px;border-radius:11px;background:#f7f9fc;border:1px solid #e2e8f0;color:#475569;font-size:13px;line-height:1.55}
+.helpStep{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid #edf0f4}
+.helpStep:last-child{border-bottom:0}
+.helpStepNo{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eaf3ff;color:#164f92;font-weight:900;font-size:12px}
+.helpStep b{display:block;margin-bottom:3px;color:#17233d;font-size:14px}
+.helpStep span{display:block;color:#5c6678;font-size:12px;line-height:1.55}
+.helpCloseBtn{border-radius:0 0 24px 24px;min-height:54px}
+@media(max-width:800px){
+  .helpPopup{padding:18px 15px 10px}
+  .helpHeader h2{font-size:21px}
+  .helpTabs button{padding:8px 10px;font-size:12px}
+  .helpStep{grid-template-columns:26px minmax(0,1fr);gap:8px;padding:9px 0}
+  .helpStepNo{width:25px;height:25px;font-size:11px}
+  .helpStep b{font-size:13px}
+  .helpStep span{font-size:11px}
+}
+
 /* rev44: remove decorative rings from all login hero slides */
 .authVisual::before,
 .authVisual::after{
@@ -1215,7 +1243,7 @@ main{
 
 <section id="vendorView" class="hidden">
 <div class="card">
-<div class="row"><div><h2 id="vendorRestaurantTitle">식당 집계</h2><div id="vendorIdentity" class="muted"></div></div><button id="vendorLogoutBtn" type="button" class="btn2 auto">로그아웃</button></div>
+<div class="row"><div><h2 id="vendorRestaurantTitle">식당 집계</h2><div id="vendorIdentity" class="muted"></div></div><button id="vendorHelpBtn" type="button" class="btn2 auto">사용방법</button><button id="vendorLogoutBtn" type="button" class="btn2 auto">로그아웃</button></div>
 </div>
 
 <div id="vendorTabs" class="tabs" style="margin-top:12px">
@@ -1256,7 +1284,7 @@ main{
 <section id="userView" class="hidden">
 <div class="userStack">
   <div class="card">
-    <div class="row"><div><h2>식사 등록</h2><div id="identity" class="muted"></div></div><button id="logoutBtn" type="button" class="btn2 auto">로그아웃</button></div>
+    <div class="row"><div><h2>식사 등록</h2><div id="identity" class="muted"></div></div><button id="userHelpBtn" type="button" class="btn2 auto">사용방법</button><button id="logoutBtn" type="button" class="btn2 auto">로그아웃</button></div>
     <div id="noQr" class="notice hidden">식사 등록은 식당에 부착된 QR을 스캔해 접속해 주세요.</div>
     <div id="mealBox" class="hidden">
       <div class="person"><div class="info"><b id="restaurantName"></b><span class="muted small">QR로 자동 인식된 식당</span></div><span class="tag">고정 QR</span></div>
@@ -1309,6 +1337,21 @@ main{
   <div class="receiptModalPanel">
     <div id="receipt" class="receipt receiptPopup"></div>
     <button id="receiptCloseBtn" type="button" class="btn full big receiptCloseBtn">확인 / 닫기</button>
+  </div>
+</div>
+
+<div id="helpModal" class="receiptModal hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="receiptModalBackdrop" data-help-close></div>
+  <div class="receiptModalPanel helpModalPanel">
+    <div class="helpPopup">
+      <div class="helpHeader">
+        <div><h2 id="helpTitle">사용방법</h2><p id="helpRoleLabel"></p></div>
+        <button id="helpCloseX" type="button" class="helpCloseX" aria-label="사용방법 닫기">×</button>
+      </div>
+      <div id="helpTabs" class="helpTabs"></div>
+      <div id="helpContent" class="helpContent"></div>
+    </div>
+    <button id="helpCloseBtn" type="button" class="btn full big helpCloseBtn">닫기</button>
   </div>
 </div>
 
@@ -1571,6 +1614,88 @@ async function loadVendorYearlySales(){
   $("vendorYearlySalesBody").innerHTML=rows.length?rows.map(function(x){return '<tr><td>'+x.year+'년</td><td>'+num(x.meal_count)+'식</td><td>'+money(x.sales)+'</td></tr>'}).join(""):'<tr><td colspan="3">매출 기록이 없습니다.</td></tr>';
   $("vendorYearlySalesFoot").innerHTML='<tr><th>누적 합계</th><th>'+num(j.total_count)+'식</th><th>'+money(j.total_sales)+'</th></tr>';
 }
+function canRegisterExternalGuest(){
+  return !!user&&(user.worker_type==="ENGINEER"||user.role!=="USER");
+}
+function helpStep(n,title,desc){
+  return '<div class="helpStep"><div class="helpStepNo">'+n+'</div><div><b>'+esc(title)+'</b><span>'+esc(desc)+'</span></div></div>';
+}
+function employeeHelpHtml(){
+  var steps=[
+    ["식당 QR 접속","식사할 식당에 부착된 QR을 스캔해 접속합니다."],
+    ["사번 로그인","사번으로 로그인하면 본인은 식사 인원에 자동 포함됩니다."],
+    ["동행 직원 추가","같이 식사하는 직원이 있으면 이름 또는 사번으로 검색해 추가합니다."]
+  ];
+  if(canRegisterExternalGuest()){
+    steps.push(["외부손님 추가","외부손님은 이름 없이 업체명과 인원만 입력합니다. 같은 업체는 인원으로 합산됩니다."]);
+  }
+  steps.push(
+    ["식사 등록","현재 인원을 확인한 뒤 ‘현재 인원 전체 식사 등록’을 누릅니다."],
+    ["등록 완료 확인","완료창의 식당명·식사구분·총 인원을 확인하고 식당에 화면을 보여줍니다."],
+    ["기록 확인","최근 등록내역과 식사 운영 달력에서 본인의 식사기록을 확인할 수 있습니다."]
+  );
+  return '<div class="helpGuide"><div class="helpGuideIntro">직원이 식당 QR을 이용해 식사를 등록하는 기본 절차입니다.</div>'+steps.map(function(x,i){return helpStep(i+1,x[0],x[1])}).join("")+'</div>';
+}
+function adminHelpHtml(){
+  var steps=[
+    ["현황 확인","오늘 식수와 이번 달 식대, 날짜별 식사 등록내역을 확인합니다."],
+    ["직원관리","직원을 등록·수정·사용중지·삭제하고 OWNER는 마스터 권한을 지정하거나 해제할 수 있습니다."],
+    ["식당·QR 관리","식당 등록, 식사단가 설정, 고정 QR 확인 및 식당 로그인 계정을 관리합니다."],
+    ["식사기록 관리","기간별 식사기록을 조회하고 잘못 등록된 기록을 삭제할 수 있습니다."],
+    ["외부손님 정산","외부손님은 업체명 기준으로 식수와 금액이 합산되어 정산에 반영됩니다."],
+    ["월 정산·엑셀","식당별·부서/업체별 월간 식수와 금액을 확인하고 엑셀로 내려받습니다."],
+    ["운영 설정","식사시간과 식사 운영 달력의 공휴일·예외일을 관리합니다."]
+  ];
+  return '<div class="helpGuide"><div class="helpGuideIntro">MASTER / OWNER가 사용하는 관리 기능입니다.</div>'+steps.map(function(x,i){return helpStep(i+1,x[0],x[1])}).join("")+'</div>';
+}
+function vendorHelpHtml(){
+  var steps=[
+    ["식당 로그인","로그인 화면의 ‘식당 로그인’에서 등록된 식당 ID로 접속합니다."],
+    ["월간 식수 확인","조회 월을 선택하면 해당 식당의 일별·월간 식수를 확인할 수 있습니다."],
+    ["월간 자료 다운로드","월간 식수 자료는 엑셀로 내려받아 정산 자료로 사용할 수 있습니다."],
+    ["매출 확인","월별 매출과 연도별 누적 매출을 조회할 수 있습니다."],
+    ["개인정보 확인","식당 화면에는 정산에 필요한 식수 중심으로 표시되며 직원 사번은 제공하지 않습니다."]
+  ];
+  return '<div class="helpGuide"><div class="helpGuideIntro">식당 계정에서 확인할 수 있는 기능입니다.</div>'+steps.map(function(x,i){return helpStep(i+1,x[0],x[1])}).join("")+'</div>';
+}
+function getHelpSections(){
+  if(vendor&&!user)return [{key:"vendor",label:"식당용",html:vendorHelpHtml}];
+  if(!user)return [];
+  if(user.role!=="USER")return [
+    {key:"employee",label:"직원용",html:employeeHelpHtml},
+    {key:"admin",label:"관리자용",html:adminHelpHtml},
+    {key:"vendor",label:"식당용",html:vendorHelpHtml}
+  ];
+  return [{key:"employee",label:"직원용",html:employeeHelpHtml}];
+}
+function renderHelpSection(key){
+  var sections=getHelpSections(),selected=sections.find(function(x){return x.key===key})||sections[0];
+  if(!selected)return;
+  $("helpTabs").innerHTML=sections.length>1?sections.map(function(x){return '<button type="button" data-help-tab="'+x.key+'" class="'+(x.key===selected.key?"on":"")+'">'+esc(x.label)+'</button>'}).join(""):"";
+  $("helpContent").innerHTML=selected.html();
+  Array.prototype.forEach.call($("helpTabs").querySelectorAll("[data-help-tab]"),function(b){b.onclick=function(){renderHelpSection(b.getAttribute("data-help-tab"))}});
+}
+function openHelp(){
+  var sections=getHelpSections();
+  if(!sections.length)return;
+  var label=vendor&&!user?"식당 계정":user.role==="OWNER"?"OWNER · 전체 안내":user.role==="MASTER"?"MASTER · 전체 안내":user.worker_type==="OP"?"OP · 직원용 안내":"EG · 직원용 안내";
+  $("helpRoleLabel").textContent=label;
+  renderHelpSection(sections[0].key);
+  $("helpModal").classList.remove("hidden");
+  document.body.classList.add("receiptModalOpen");
+  setTimeout(function(){$("helpCloseBtn").focus()},0);
+}
+function closeHelp(){
+  $("helpModal").classList.add("hidden");
+  document.body.classList.remove("receiptModalOpen");
+}
+$("userHelpBtn").onclick=openHelp;
+$("vendorHelpBtn").onclick=openHelp;
+$("helpCloseBtn").onclick=closeHelp;
+$("helpCloseX").onclick=closeHelp;
+Array.prototype.forEach.call(document.querySelectorAll("[data-help-close]"),function(x){x.onclick=closeHelp});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!$("helpModal").classList.contains("hidden"))closeHelp()});
+
 $("vendorLoadBtn").onclick=loadVendorMonthly;
 $("vendorMonth").onchange=loadVendorMonthly;
 $("vendorExcelBtn").onclick=async function(){var j=await post({action:"vendor_monthly_xlsx",token:vendorToken,month:$("vendorMonth").value||todayKst().slice(0,7)});if(!j.ok){alert(j.message);return}downloadBase64(j.base64,j.filename,j.mime)};
@@ -1583,7 +1708,7 @@ $("authView").classList.add("hidden");$("userView").classList.remove("hidden");
 $("who").textContent=user.name+" · "+user.department+" · "+(user.role==="USER"?"일반":user.role==="OWNER"?"최초 마스터":"마스터");
 $("identity").innerHTML="<b>"+esc(user.name)+"</b> · "+esc(user.department)+" · "+esc(user.employee_no)+" · "+(user.worker_type==="OP"?"OP":"EG");
 if(restaurant){$("restaurantName").textContent=restaurant.name;$("mealBox").classList.remove("hidden");$("noQr").classList.add("hidden")}else{$("mealBox").classList.add("hidden");$("noQr").classList.remove("hidden")}
-$("externalBlock").classList.remove("hidden");
+$("externalBlock").classList.toggle("hidden",!(user.worker_type==="ENGINEER"||user.role!=="USER"));
 $("adminView").classList.toggle("hidden",user.role==="USER");$("pinChangeNotice").classList.toggle("hidden",!user.pin_must_change);
 if(!$("userCalMonth").value)$("userCalMonth").value=todayKst().slice(0,7);await loadPrefs();renderParticipants();if(restaurant)await loadTodayCalendarStatus();await loadRecent();await loadUserCalendar();if(user.role!=="USER")await loadDashboard()
 }
@@ -1592,7 +1717,7 @@ async function loadPrefs(){var j=await post({action:"get_preferences",token:toke
 function renderParticipants(){var s='<div class="person"><div class="info"><b>'+esc(user?user.name:"")+' <span class="tag '+(user&&user.worker_type==="OP"?"op":"eng")+'">'+(user&&user.worker_type==="OP"?"OP":"EG")+'</span></b><span class="muted small">'+esc(user?user.department:"")+' · 본인</span></div></div>';participants.forEach(function(p,i){if(p.kind==="employee")s+='<div class="person"><div class="info"><b>'+esc(p.name)+' <span class="tag '+(p.worker_type==="OP"?"op":"eng")+'">'+(p.worker_type==="OP"?"OP":"EG")+'</span></b><span class="muted small">'+esc(p.department)+' · '+esc(p.employee_no||"사번 미등록")+'</span></div><button type="button" class="danger auto" data-rm="'+i+'">삭제</button></div>';else s+='<div class="person"><div class="info"><b>'+esc(p.company)+' <span class="tag eng">외부손님</span></b><span class="muted small">'+Number(p.count||1)+'명</span></div><button type="button" class="danger auto" data-rm="'+i+'">삭제</button></div>'});$("participants").innerHTML=s;Array.prototype.forEach.call($("participants").querySelectorAll("[data-rm]"),function(b){b.onclick=function(){participants.splice(Number(b.getAttribute("data-rm")),1);renderParticipants()}})}
 async function searchEmployees(){var q=$("employeeSearch").value.trim();var j=await post({action:"search_employees",token:token,q:q});if(!j.ok){alert(j.message);return}var rows=j.employees||[];$("searchResults").innerHTML=rows.length?rows.map(function(x,i){return '<div class="searchItem"><div class="info"><b>'+esc(x.name)+'</b><div class="muted small">'+esc(x.employee_no||"사번 미등록")+' · '+esc(x.department)+' · '+(x.worker_type==="OP"?"OP":"EG")+'</div></div><button type="button" class="btn2 auto" data-add="'+i+'">추가</button></div>'}).join(""):'<div class="muted small">검색 결과가 없습니다.</div>';Array.prototype.forEach.call($("searchResults").querySelectorAll("[data-add]"),function(b){b.onclick=function(){var x=rows[Number(b.getAttribute("data-add"))];if(!participants.some(function(p){return p.kind==="employee"&&p.employee_id===x.id}))participants.push({kind:"employee",employee_id:x.id,employee_no:x.employee_no,name:x.name,department:x.department,worker_type:x.worker_type});renderParticipants()}})}
 $("searchBtn").onclick=searchEmployees;$("employeeSearch").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();searchEmployees()}});
-$("addExternalBtn").onclick=function(){var company=$("extCompany").value.trim(),count=Math.floor(Number($("extCount").value||0));if(!company||count<1||count>100){alert("업체명과 인원(1~100명)을 확인해 주세요.");return}var existing=participants.find(function(p){return p.kind==="external"&&p.company===company});if(existing){if(Number(existing.count||0)+count>100){alert("같은 업체의 외부손님은 최대 100명까지 추가할 수 있습니다.");return}existing.count=Number(existing.count||0)+count}else participants.push({kind:"external",company:company,count:count});$("extCount").value="1";renderParticipants()};
+$("addExternalBtn").onclick=function(){if(!(user&&(user.worker_type==="ENGINEER"||user.role!=="USER"))){alert("외부손님 등록은 EG 또는 마스터만 가능합니다.");return}var company=$("extCompany").value.trim(),count=Math.floor(Number($("extCount").value||0));if(!company||count<1||count>100){alert("업체명과 인원(1~100명)을 확인해 주세요.");return}var existing=participants.find(function(p){return p.kind==="external"&&p.company===company});if(existing){if(Number(existing.count||0)+count>100){alert("같은 업체의 외부손님은 최대 100명까지 추가할 수 있습니다.");return}existing.count=Number(existing.count||0)+count}else participants.push({kind:"external",company:company,count:count});$("extCount").value="1";renderParticipants()};
 $("saveFavBtn").onclick=async function(){var employeeCompanions=participants.filter(function(x){return x.kind==="employee"});var j=await post({action:"save_preferences",token:token,companions:employeeCompanions,auto_load:$("autoLoad").checked});alert(j.message||"저장 완료");if(j.ok){savedCompanions=employeeCompanions.map(function(x){return JSON.parse(JSON.stringify(x))});$("favInfo").textContent="저장된 동행 직원 "+savedCompanions.length+"명"}};
 $("clearFavBtn").onclick=async function(){if(!confirm("저장된 동행 직원 목록을 비울까요?"))return;var j=await post({action:"save_preferences",token:token,companions:[],auto_load:$("autoLoad").checked});if(j.ok){savedCompanions=[];$("favInfo").textContent="저장된 동행 직원 0명";alert("저장목록을 비웠습니다.")}};
 $("autoLoad").onchange=async function(){await post({action:"save_preferences",token:token,companions:savedCompanions,auto_load:$("autoLoad").checked})};
