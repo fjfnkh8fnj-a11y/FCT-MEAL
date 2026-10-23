@@ -1182,6 +1182,41 @@ main{
   .helpStep span{font-size:11px}
 }
 
+
+/* rev47: restaurant weekly schedule + date exceptions */
+.vendorWeeklyRules{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.vendorWeekCard{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;min-width:0}
+.vendorWeekCard b{display:block;text-align:center;margin-bottom:8px}
+.vendorWeekStatus{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;margin-bottom:7px}
+.vendorWeekStatus input{width:auto;min-height:0}
+.vendorWeekPeriods{display:grid;gap:5px}
+.vendorWeekPeriods label,.vendorOperatingPeriods label{display:flex;align-items:center;gap:5px;margin:0;font-size:11px;font-weight:700}
+.vendorWeekPeriods input,.vendorOperatingPeriods input{width:auto;min-height:0}
+.vendorOperatingTable table{min-width:980px}
+.vendorOperatingPeriods{display:flex;gap:8px;flex-wrap:wrap}
+.vendorOperatingStatus.open{color:#087443;font-weight:900}
+.vendorOperatingStatus.closed{color:#b42318;font-weight:900}
+.vendorOperatingStatus.unset{color:#7b8798;font-weight:800}
+.userRestaurantOpen{margin-top:4px;padding:3px 4px;border-radius:6px;background:#eaf8ef;border:1px solid #b9e1c7;color:#087443;font-size:8px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.userRestaurantOps{margin-top:12px;display:grid;gap:7px}
+.userRestaurantOps:empty{display:none}
+.userRestaurantOpsTitle{font-size:12px;font-weight:900;color:#334155}
+.userRestaurantOpsRow{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;border:1px solid #e5e9f0;border-radius:10px;padding:8px 10px;background:#fafbfd}
+.userRestaurantOpsDate{font-size:11px;font-weight:900;color:#334155;flex:0 0 76px}
+.userRestaurantOpsList{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;min-width:0}
+.userRestaurantOpChip{font-size:10px;padding:3px 6px;border-radius:999px;background:#eef2f6;color:#536174;font-weight:800}
+.userRestaurantOpChip.open{background:#eaf8ef;color:#087443}
+.userRestaurantOpChip.closed{background:#fff0ef;color:#9e1c16}
+@media(max-width:800px){
+  .vendorWeeklyRules{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .vendorWeekCard:last-child{grid-column:1/-1}
+  .vendorOperatingTable{max-height:520px}
+  .userRestaurantOpen{font-size:7px;padding:2px 2px}
+  .userRestaurantOpsRow{display:block}
+  .userRestaurantOpsDate{margin-bottom:5px}
+  .userRestaurantOpsList{justify-content:flex-start}
+}
+
 /* rev44: remove decorative rings from all login hero slides */
 .authVisual::before,
 .authVisual::after{
@@ -1248,8 +1283,35 @@ main{
 
 <div id="vendorTabs" class="tabs" style="margin-top:12px">
 <button type="button" class="on" data-vtab="daily">월간 식수</button>
+<button type="button" data-vtab="operating">운영일정</button>
 <button type="button" data-vtab="monthlySales">월별 매출</button>
 <button type="button" data-vtab="yearlySales">년별 매출</button>
+</div>
+
+<div id="vendor-tab-operating" class="vendorPanel">
+<div class="card">
+  <h2>기본 주간 운영기준</h2>
+  <p class="muted small">월~일 요일별 기본 영업여부와 운영 식사를 한 번 설정하면 이후 날짜에 반복 적용됩니다.</p>
+  <div class="notice">기본 운영기준을 바꾸어도 회사의 식대지급·식사등록 기준은 변경되지 않습니다. 식당 영업정보 안내용입니다.</div>
+  <div id="vendorWeeklyRules" class="vendorWeeklyRules" style="margin-top:12px"></div>
+  <button id="vendorSaveWeeklyBtn" type="button" class="btn" style="margin-top:12px">기본 운영기준 저장</button>
+  <div id="vendorWeeklyMsg"></div>
+</div>
+<div class="card" style="margin-top:12px">
+  <div class="row mobile">
+    <div><h2 style="margin:0">날짜별 예외수정</h2><p class="muted small" style="margin:4px 0 0">기본 운영기준과 다른 날짜만 영업·휴무·운영 식사를 수정합니다.</p></div>
+    <div class="auto"><label>조회 월</label><input id="vendorOperatingMonth" type="month"></div>
+    <button id="vendorLoadOperatingBtn" type="button" class="btn2 auto">조회</button>
+    <button id="vendorSaveOperatingBtn" type="button" class="btn auto">전체 저장</button>
+  </div>
+  <div id="vendorOperatingMsg"></div>
+  <div class="table vendorOperatingTable" style="margin-top:12px">
+    <table>
+      <thead><tr><th>날짜</th><th>요일</th><th>기본 운영</th><th>예외설정</th><th>운영 식사</th><th>비고</th><th>최종 상태</th></tr></thead>
+      <tbody id="vendorOperatingBody"></tbody>
+    </table>
+  </div>
+</div>
 </div>
 
 <div id="vendor-tab-daily" class="vendorPanel on">
@@ -1327,6 +1389,7 @@ main{
     <div class="userCalendarWeek"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
     <div id="userCalendarGrid" class="userCalendarGrid"></div>
     <div id="userCalendarMsg" class="muted small" style="margin-top:8px"></div>
+    <div id="userRestaurantOps" class="userRestaurantOps"></div>
     <div class="userCalendarFootnote">※ 평일: 주간(점심·저녁) 2식 제공 / 야간(아침·야식) 2식 식대 지급<br>※ 주말·공휴일: 주·야간 각 2식 식대 지급</div>
   </div>
 </div>
@@ -1482,6 +1545,7 @@ function $(id){return document.getElementById(id)}
 var token="",vendorToken="";try{token=localStorage.getItem("fct_meal_token")||"";vendorToken=localStorage.getItem("fct_vendor_token")||""}catch(e){}
 var user=null,vendor=null,restaurantId=new URLSearchParams(location.search).get("restaurant")||"",restaurant=null;
 var participants=[],savedCompanions=[],adminUsers=[],adminDepartments=[],adminRestaurants=[],adminPeriods=[],adminRecords=[],adminCalendar=[],adminVendorAccounts=[],manualUsers=[],manualDates=[],manualSelectedUsers=new Set();
+var vendorOperatingPeriods=[],vendorWeekly=[],vendorOperatingDays=[];
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]})}
 function msg(id,text,ok){var e=$(id);e.className=text?(ok?"ok":"err"):"";e.textContent=text||""}
 async function post(data){try{var r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});return await r.json()}catch(e){return {ok:false,message:"서버 연결에 실패했습니다."}}}
@@ -1541,6 +1605,7 @@ async function enterVendor(){
   $("vendorIdentity").textContent="식당 ID "+vendor.vendor_code+" · 연결된 식당만 조회";
   var now=todayKst();
   if(!$("vendorMonth").value)$("vendorMonth").value=now.slice(0,7);
+  if(!$("vendorOperatingMonth").value)$("vendorOperatingMonth").value=now.slice(0,7);
   if(!$("vendorSalesYear").value)$("vendorSalesYear").value=now.slice(0,4);
   vendorTab("daily");
 }
@@ -1549,10 +1614,102 @@ function vendorTab(n){
   Array.prototype.forEach.call($("vendorView").querySelectorAll(".vendorPanel"),function(p){p.classList.remove("on")});
   $("vendor-tab-"+n).classList.add("on");
   if(n==="daily")loadVendorMonthly();
+  if(n==="operating")loadVendorOperating();
   if(n==="monthlySales")loadVendorMonthlySales();
   if(n==="yearlySales")loadVendorYearlySales();
 }
 Array.prototype.forEach.call($("vendorTabs").querySelectorAll("button"),function(b){b.onclick=function(){vendorTab(b.getAttribute("data-vtab"))}});
+
+
+function vendorPeriodLabelMap(){
+  var m={};vendorOperatingPeriods.forEach(function(p){m[p.code]=p.label});return m;
+}
+function vendorPeriodChecks(prefix,codes){
+  var selected=new Set(codes||[]);
+  return '<div class="vendorOperatingPeriods">'+vendorOperatingPeriods.map(function(p){
+    return '<label><input type="checkbox" data-vop-period="'+prefix+'" value="'+esc(p.code)+'" '+(selected.has(p.code)?"checked":"")+'>'+esc(p.label)+'</label>';
+  }).join("")+'</div>';
+}
+function renderVendorWeekly(){
+  var map={};(vendorWeekly||[]).forEach(function(x){map[Number(x.weekday)]=x});
+  var order=[1,2,3,4,5,6,0],names={0:"일",1:"월",2:"화",3:"수",4:"목",5:"금",6:"토"};
+  var defaults=vendorOperatingPeriods.map(function(p){return p.code});
+  $("vendorWeeklyRules").innerHTML=order.map(function(day){
+    var r=map[day],open=r?r.status==="OPEN":day>=1&&day<=5,codes=r?(r.open_period_codes||[]):(open?defaults:[]);
+    return '<div class="vendorWeekCard" data-vweek="'+day+'"><b>'+names[day]+'요일</b><label class="vendorWeekStatus"><input type="checkbox" data-vweek-open '+(open?"checked":"")+'> 영업</label><div class="vendorWeekPeriods">'+vendorOperatingPeriods.map(function(p){return '<label><input type="checkbox" data-vweek-period value="'+esc(p.code)+'" '+(codes.indexOf(p.code)>=0?"checked":"")+'> '+esc(p.label)+'</label>'}).join("")+'</div></div>';
+  }).join("");
+  Array.prototype.forEach.call($("vendorWeeklyRules").querySelectorAll("[data-vweek]"),function(card){
+    var on=card.querySelector("[data-vweek-open]");
+    function sync(){Array.prototype.forEach.call(card.querySelectorAll("[data-vweek-period]"),function(x){x.disabled=!on.checked})}
+    on.onchange=sync;sync();
+  });
+}
+async function loadVendorOperating(){
+  var month=$("vendorOperatingMonth").value||todayKst().slice(0,7);$("vendorOperatingMonth").value=month;
+  var pair=await Promise.all([
+    post({action:"vendor_operating_settings",token:vendorToken}),
+    post({action:"vendor_operating_month",token:vendorToken,month:month})
+  ]);
+  if(!pair[0].ok||!pair[1].ok){msg("vendorOperatingMsg",pair[0].message||pair[1].message||"운영일정을 불러오지 못했습니다.",false);return}
+  vendorOperatingPeriods=pair[0].periods||[];
+  vendorWeekly=pair[0].weekly||[];
+  vendorOperatingDays=pair[1].days||[];
+  renderVendorWeekly();
+  renderVendorOperatingMonth();
+  msg("vendorOperatingMsg","",true);
+}
+function renderVendorOperatingMonth(){
+  var names={0:"일",1:"월",2:"화",3:"수",4:"목",5:"금",6:"토"},pmap=vendorPeriodLabelMap();
+  $("vendorOperatingBody").innerHTML=(vendorOperatingDays||[]).map(function(d,i){
+    var base=d.base_status==="OPEN"?"영업 · "+(d.base_period_codes||[]).map(function(x){return pmap[x]||x}).join("·"):d.base_status==="CLOSED"?"휴무":"미설정";
+    var mode=d.override_status||"";
+    var final=d.status==="OPEN"?"영업 · "+(d.open_period_labels||[]).join("·"):d.status==="CLOSED"?"휴무":"미설정";
+    var cls=d.status==="OPEN"?"open":d.status==="CLOSED"?"closed":"unset";
+    var codes=mode==="OPEN"?(d.override_period_codes||[]):d.base_period_codes||[];
+    return '<tr><td>'+esc(d.date)+'</td><td>'+names[d.weekday]+'</td><td>'+esc(base)+'</td><td><select id="vopMode_'+i+'"><option value="" '+(!mode?"selected":"")+'>기본 기준</option><option value="OPEN" '+(mode==="OPEN"?"selected":"")+'>영업</option><option value="CLOSED" '+(mode==="CLOSED"?"selected":"")+'>휴무</option></select></td><td id="vopPeriods_'+i+'">'+vendorPeriodChecks("day_"+i,codes)+'</td><td><input id="vopNote_'+i+'" value="'+esc(d.override_note||"")+'" placeholder="선택 입력"></td><td><span class="vendorOperatingStatus '+cls+'" id="vopFinal_'+i+'">'+esc(final)+'</span></td></tr>';
+  }).join("");
+  (vendorOperatingDays||[]).forEach(function(d,i){
+    var mode=$("vopMode_"+i);
+    function sync(){
+      var val=mode.value,box=$("vopPeriods_"+i),checks=box.querySelectorAll('input[type="checkbox"]');
+      var enabled=val==="OPEN";
+      Array.prototype.forEach.call(checks,function(x){x.disabled=!enabled});
+      var pmap=vendorPeriodLabelMap(),statusText="",cls="unset";
+      if(val==="CLOSED"){statusText="휴무";cls="closed"}
+      else if(val==="OPEN"){var labels=[];Array.prototype.forEach.call(checks,function(x){if(x.checked)labels.push(pmap[x.value]||x.value)});statusText="영업"+(labels.length?" · "+labels.join("·"):"");cls="open"}
+      else if(d.base_status==="OPEN"){statusText="영업 · "+(d.base_period_codes||[]).map(function(x){return pmap[x]||x}).join("·");cls="open"}
+      else if(d.base_status==="CLOSED"){statusText="휴무";cls="closed"}
+      else statusText="미설정";
+      var finalEl=$("vopFinal_"+i);finalEl.textContent=statusText;finalEl.className="vendorOperatingStatus "+cls;
+    }
+    mode.onchange=sync;
+    Array.prototype.forEach.call($("vopPeriods_"+i).querySelectorAll('input[type="checkbox"]'),function(x){x.onchange=sync});
+    sync();
+  });
+}
+$("vendorSaveWeeklyBtn").onclick=async function(){
+  var rows=[];
+  Array.prototype.forEach.call($("vendorWeeklyRules").querySelectorAll("[data-vweek]"),function(card){
+    var weekday=Number(card.getAttribute("data-vweek")),open=card.querySelector("[data-vweek-open]").checked,codes=[];
+    Array.prototype.forEach.call(card.querySelectorAll("[data-vweek-period]"),function(x){if(x.checked)codes.push(x.value)});
+    rows.push({weekday:weekday,status:open?"OPEN":"CLOSED",open_period_codes:open?codes:[]});
+  });
+  var j=await post({action:"vendor_save_operating_weekly",token:vendorToken,rows:rows});
+  msg("vendorWeeklyMsg",j.message||"",j.ok);
+  if(j.ok)await loadVendorOperating();
+};
+$("vendorLoadOperatingBtn").onclick=loadVendorOperating;
+$("vendorOperatingMonth").onchange=loadVendorOperating;
+$("vendorSaveOperatingBtn").onclick=async function(){
+  var days=(vendorOperatingDays||[]).map(function(d,i){
+    var mode=$("vopMode_"+i).value,codes=[];
+    Array.prototype.forEach.call($("vopPeriods_"+i).querySelectorAll('input[type="checkbox"]'),function(x){if(x.checked)codes.push(x.value)});
+    return {date:d.date,mode:mode||"DEFAULT",open_period_codes:mode==="OPEN"?codes:[],note:$("vopNote_"+i).value};
+  });
+  var j=await post({action:"vendor_save_operating_month",token:vendorToken,month:$("vendorOperatingMonth").value,days:days});
+  msg("vendorOperatingMsg",j.message||"",j.ok);
+  if(j.ok)await loadVendorOperating();
+};
 
 async function loadVendorMonthly(){
   var month=$("vendorMonth").value||todayKst().slice(0,7),j=await post({action:"vendor_monthly_summary",token:vendorToken,month:month});
@@ -1640,7 +1797,7 @@ function adminHelpHtml(){
   var steps=[
     ["현황 확인","오늘 식수와 이번 달 식대, 날짜별 식사 등록내역을 확인합니다."],
     ["직원관리","직원을 등록·수정·사용중지·삭제하고 OWNER는 마스터 권한을 지정하거나 해제할 수 있습니다."],
-    ["식당·QR 관리","식당 등록, 식사단가 설정, 고정 QR 확인 및 식당 로그인 계정을 관리합니다."],
+    ["식당·QR 관리","식당 등록, 식사단가 설정, 고정 QR 확인 및 식당 로그인 계정을 관리합니다. 식당이 등록한 운영일정도 직원 달력 안내에 반영됩니다."],
     ["식사기록 관리","기간별 식사기록을 조회하고 잘못 등록된 기록을 삭제할 수 있습니다."],
     ["외부손님 정산","외부손님은 업체명 기준으로 식수와 금액이 합산되어 정산에 반영됩니다."],
     ["월 정산·엑셀","식당별·부서/업체별 월간 식수와 금액을 확인하고 엑셀로 내려받습니다."],
@@ -1651,6 +1808,8 @@ function adminHelpHtml(){
 function vendorHelpHtml(){
   var steps=[
     ["식당 로그인","로그인 화면의 ‘식당 로그인’에서 등록된 식당 ID로 접속합니다."],
+    ["기본 운영일정 설정","운영일정 메뉴에서 월~일 기본 영업여부와 운영 식사를 한 번에 저장합니다."],
+    ["날짜별 예외수정","기본기준과 다른 날짜만 영업·휴무·운영 식사를 수정합니다. 수정하지 않은 날짜는 요일별 기본기준을 자동 적용합니다."],
     ["월간 식수 확인","조회 월을 선택하면 해당 식당의 일별·월간 식수를 확인할 수 있습니다."],
     ["월간 자료 다운로드","월간 식수 자료는 엑셀로 내려받아 정산 자료로 사용할 수 있습니다."],
     ["매출 확인","월별 매출과 연도별 누적 매출을 조회할 수 있습니다."],
@@ -1743,15 +1902,20 @@ function shiftUserCalendarMonth(month,delta){
   var p=String(month||todayKst().slice(0,7)).split("-"),d=new Date(Number(p[0]),Number(p[1])-1+delta,1);
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
 }
-function renderUserCalendar(days,meals){
-  var grid=$("userCalendarGrid"),month=$("userCalMonth").value||todayKst().slice(0,7);
-  var mealMap={};
+function renderUserCalendar(days,meals,operating){
+  var grid=$("userCalendarGrid"),month=$("userCalMonth").value||todayKst().slice(0,7),mealMap={},opMap={};
   (meals||[]).forEach(function(m){(mealMap[m.meal_date]||(mealMap[m.meal_date]=[])).push(m)});
-  var first=new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-1,1).getDay();
-  var html="";
+  ((operating&&operating.restaurants)||[]).forEach(function(r){
+    if(!r.configured)return;
+    (r.days||[]).forEach(function(d){
+      if(!d.status)return;
+      (opMap[d.date]||(opMap[d.date]=[])).push({restaurant_name:r.restaurant_name,status:d.status,labels:d.open_period_labels||[],note:d.note||"",source:d.source});
+    });
+  });
+  var first=new Date(Number(month.slice(0,4)),Number(month.slice(5,7))-1,1).getDay(),html="";
   for(var i=0;i<first;i++)html+='<div class="userCalCell empty"></div>';
   (days||[]).forEach(function(d){
-    var own=mealMap[d.date]||[],today=d.date===todayKst(),cls=["userCalCell"];
+    var own=mealMap[d.date]||[],ops=opMap[d.date]||[],openOps=ops.filter(function(x){return x.status==="OPEN"}),today=d.date===todayKst(),cls=["userCalCell"];
     if(d.blocked)cls.push("blocked");else cls.push("allowed");
     if(d.override_mode)cls.push("hasOverride");
     if(d.holiday_label)cls.push("holiday");
@@ -1762,17 +1926,33 @@ function renderUserCalendar(days,meals){
     var status=(d.override_mode==="BLOCK"||d.blocked)?"식대지급":"";
     var reason=d.override_mode==="ALLOW"?(d.note||"관리자 예외"):(d.blocked?(d.holiday_label||d.reason||d.note||""):(d.note||""));
     var note=reason?'<div class="userCalNote">'+esc(reason)+'</div>':"";
+    var opHtml=(d.blocked&&openOps.length)?'<div class="userRestaurantOpen">'+(openOps.length===1?esc(openOps[0].restaurant_name)+" 영업":"식당영업 "+openOps.length+"곳")+'</div>':"";
     var mealsHtml=own.map(function(m){return '<div class="myMealChip" title="'+esc(m.restaurant_name+" · "+m.period_label)+'"><b>'+esc(m.period_label)+'</b><span>'+esc(m.restaurant_name)+'</span></div>';}).join("");
-    html+='<div class="'+cls.join(" ")+'"><div class="userCalDate"><b>'+Number(d.date.slice(-2))+'</b><span>'+esc(d.weekday)+'</span></div>'+(status?'<div class="userCalStatus">'+esc(status)+'</div>':"")+note+mealsHtml+'</div>';
+    html+='<div class="'+cls.join(" ")+'"><div class="userCalDate"><b>'+Number(d.date.slice(-2))+'</b><span>'+esc(d.weekday)+'</span></div>'+(status?'<div class="userCalStatus">'+esc(status)+'</div>':"")+note+opHtml+mealsHtml+'</div>';
   });
   grid.innerHTML=html;
   $("userCalendarMsg").textContent=month.replace("-","년 ")+"월 · 내 식사 "+(meals||[]).length+"건";
+
+  var blockedDates=(days||[]).filter(function(d){return d.blocked&&(opMap[d.date]||[]).length});
+  $("userRestaurantOps").innerHTML=blockedDates.length
+    ? '<div class="userRestaurantOpsTitle">주말·공휴일 식당 운영안내</div>'+blockedDates.map(function(d){
+        var ops=opMap[d.date]||[];
+        return '<div class="userRestaurantOpsRow"><div class="userRestaurantOpsDate">'+esc(d.date.slice(5).replace("-","/"))+' ('+esc(d.weekday)+')</div><div class="userRestaurantOpsList">'+ops.map(function(x){
+          var text=x.status==="OPEN"?x.restaurant_name+" · 영업"+(x.labels.length?" ("+x.labels.join("·")+")":""):x.restaurant_name+" · 휴무";
+          return '<span class="userRestaurantOpChip '+(x.status==="OPEN"?"open":"closed")+'">'+esc(text)+'</span>';
+        }).join("")+'</div></div>';
+      }).join("")
+    : "";
 }
 async function loadUserCalendar(){
   var month=$("userCalMonth").value||todayKst().slice(0,7);$("userCalMonth").value=month;
-  var pair=await Promise.all([post({action:"calendar_month",token:token,month:month}),post({action:"my_monthly_meals",token:token,month:month})]);
-  if(!pair[0].ok||!pair[1].ok){$("userCalendarMsg").textContent=pair[0].message||pair[1].message||"달력을 불러오지 못했습니다.";return}
-  renderUserCalendar(pair[0].days||[],pair[1].meals||[]);
+  var all=await Promise.all([
+    post({action:"calendar_month",token:token,month:month}),
+    post({action:"my_monthly_meals",token:token,month:month}),
+    post({action:"restaurant_operating_month",token:token,month:month})
+  ]);
+  if(!all[0].ok||!all[1].ok||!all[2].ok){$("userCalendarMsg").textContent=all[0].message||all[1].message||all[2].message||"달력을 불러오지 못했습니다.";return}
+  renderUserCalendar(all[0].days||[],all[1].meals||[],all[2]);
 }
 $("userCalMonth").onchange=loadUserCalendar;
 $("userCalPrev").onclick=function(){$("userCalMonth").value=shiftUserCalendarMonth($("userCalMonth").value,-1);loadUserCalendar()};
@@ -2062,7 +2242,7 @@ async function deleteRecord(id){if(!confirm("이 식사기록을 삭제할까요
 function summaryTable(rows){var m={};rows.forEach(function(x){var g=x.person_type==="EXTERNAL"?(x.external_company||"외부업체"):(x.department||"-"),k=x.restaurant_name+"|"+x.period_label+"|"+g,u=mealUnits(x);if(!m[k])m[k]={r:x.restaurant_name,p:x.period_label,g:g,c:0,a:0};m[k].c+=u;m[k].a+=Number(x.price||0)*u});var a=Object.keys(m).map(function(k){return m[k]});return '<table><thead><tr><th>식당</th><th>식사</th><th>부서/업체</th><th>식수</th><th>금액</th></tr></thead><tbody>'+(a.length?a.map(function(x){return '<tr><td>'+esc(x.r)+'</td><td>'+esc(x.p)+'</td><td>'+esc(x.g)+'</td><td>'+x.c+'</td><td>'+num(x.a)+'원</td></tr>'}).join(""):'<tr><td colspan="5">기록이 없습니다.</td></tr>')+'</tbody></table>'}
 function downloadCSV(rows,name){if(!rows.length){alert("다운로드할 데이터가 없습니다.");return}var h=Object.keys(rows[0]),lines=[h.map(csvCell).join(",")];rows.forEach(function(r){lines.push(h.map(function(k){return csvCell(r[k])}).join(","))});var blob=new Blob(["\uFEFF"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},500)}
 function csvCell(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'}
-(async function(){var t=todayKst();$("rf").value=t.slice(0,7)+"-01";$("rt").value=t;$("rmMonth").value=t.slice(0,7);$("calMonth").value=t.slice(0,7);$("vendorMonth").value=t.slice(0,7);$("vendorSalesYear").value=t.slice(0,4);$("manualDate").value=t;await loadPublicDepartments();await loadRestaurant();await restore()})();
+(async function(){var t=todayKst();$("rf").value=t.slice(0,7)+"-01";$("rt").value=t;$("rmMonth").value=t.slice(0,7);$("calMonth").value=t.slice(0,7);$("vendorMonth").value=t.slice(0,7);$("vendorOperatingMonth").value=t.slice(0,7);$("vendorSalesYear").value=t.slice(0,4);$("manualDate").value=t;await loadPublicDepartments();await loadRestaurant();await restore()})();
 })();
 </script>
 </body>
