@@ -1424,6 +1424,12 @@ main{
 <div id="kpis" class="kpis"></div>
 <div class="card" style="margin-top:12px"><h2>이번 달 집계</h2><div id="dashSummary" class="table"></div></div>
 <div class="card" style="margin-top:12px">
+  <div class="row">
+    <div><h2 style="margin:0">식당 운영현황</h2><p class="muted small" style="margin:4px 0 0">식당에서 등록한 이번 달 주말·공휴일 영업일과 운영 식사를 확인합니다.</p></div>
+  </div>
+  <div id="dashRestaurantOps" style="margin-top:10px"></div>
+</div>
+<div class="card" style="margin-top:12px">
   <div class="row"><div><h2 style="margin:0">식사 등록내역</h2><p class="muted small" style="margin:4px 0 0">날짜별로 확인하고 검색한 뒤 잘못 등록된 기록을 바로 삭제할 수 있습니다.</p></div></div>
   <div class="adminMealFilters">
     <div><label>날짜</label><input id="dashMealDate" type="date"></div>
@@ -1695,7 +1701,7 @@ $("vendorSaveWeeklyBtn").onclick=async function(){
     rows.push({weekday:weekday,status:open?"OPEN":"CLOSED",open_period_codes:open?codes:[]});
   });
   var j=await post({action:"vendor_save_operating_weekly",token:vendorToken,rows:rows});
-  msg("vendorWeeklyMsg",j.message||"",j.ok);
+  msg("vendorWeeklyMsg",j.ok?"저장 완료 · 직원 달력과 마스터 종합에 반영됩니다.":(j.message||""),j.ok);
   if(j.ok)await loadVendorOperating();
 };
 $("vendorLoadOperatingBtn").onclick=loadVendorOperating;
@@ -1707,7 +1713,7 @@ $("vendorSaveOperatingBtn").onclick=async function(){
     return {date:d.date,mode:mode||"DEFAULT",open_period_codes:mode==="OPEN"?codes:[],note:$("vopNote_"+i).value};
   });
   var j=await post({action:"vendor_save_operating_month",token:vendorToken,month:$("vendorOperatingMonth").value,days:days});
-  msg("vendorOperatingMsg",j.message||"",j.ok);
+  msg("vendorOperatingMsg",j.ok?"저장 완료 · 직원 달력과 마스터 종합에 반영됩니다.":(j.message||""),j.ok);
   if(j.ok)await loadVendorOperating();
 };
 
@@ -1971,7 +1977,48 @@ $("dashMealDate").onchange=renderDashboardRecent;
 $("dashMealSearch").oninput=renderDashboardRecent;
 $("dashMealClear").onclick=function(){$("dashMealDate").value="";$("dashMealSearch").value="";renderDashboardRecent()};
 
-async function loadDashboard(){var t=todayKst(),f=t.slice(0,7)+"-01",j=await post({action:"admin_records",token:token,from:f,to:t});if(!j.ok)return;adminRecords=j.records||[];var today=adminRecords.filter(function(x){return x.meal_date===t}),labels={},todayTotal=0;var amt=adminRecords.reduce(function(s,x){return s+Number(x.price||0)*mealUnits(x)},0);today.forEach(function(x){var units=mealUnits(x);todayTotal+=units;labels[x.period_label]=(labels[x.period_label]||0)+units});$("kpis").innerHTML=[["오늘 총 식수",todayTotal+"식"],["오늘 점심",(labels["점심"]||0)+"식"],["오늘 저녁",(labels["저녁"]||0)+"식"],["오늘 아침/야식",((labels["아침"]||0)+(labels["야식"]||0))+"식"],["이번달 예상 식대",num(amt)+"원"]].map(function(x){return '<div class="kpi"><span class="muted small">'+x[0]+'</span><b>'+x[1]+'</b></div>'}).join("");$("dashSummary").innerHTML=summaryTable(adminRecords);renderDashboardRecent()}
+function renderDashboardRestaurantOps(ops,calendarDays){
+  var box=$("dashRestaurantOps");
+  if(!box)return;
+  var blocked={};
+  (calendarDays||[]).forEach(function(d){if(d.blocked)blocked[d.date]=d});
+  var restaurants=ops&&Array.isArray(ops.restaurants)?ops.restaurants:[];
+  if(!restaurants.length){
+    box.innerHTML='<div class="muted small">등록된 식당이 없습니다.</div>';
+    return;
+  }
+  box.innerHTML='<div class="table"><table><thead><tr><th>식당</th><th>등록상태</th><th>주말·공휴일 영업일</th></tr></thead><tbody>'+restaurants.map(function(r){
+    if(!r.configured){
+      return '<tr><td><b>'+esc(r.restaurant_name)+'</b></td><td><span class="vendorOperatingStatus unset">미등록</span></td><td class="muted">식당에서 운영일정을 저장하지 않았습니다.</td></tr>';
+    }
+    var openDays=(r.days||[]).filter(function(d){return blocked[d.date]&&d.status==="OPEN"});
+    var openText=openDays.length?openDays.map(function(d){
+      var meta=blocked[d.date]||{},labels=(d.open_period_labels||[]).join("·");
+      return '<span class="userRestaurantOpChip open">'+esc(d.date.slice(5).replace("-","/"))+' ('+esc(meta.weekday||"")+') · '+esc(labels||"영업")+'</span>';
+    }).join(" "):'<span class="muted">이번 달 주말·공휴일 영업 없음</span>';
+    return '<tr><td><b>'+esc(r.restaurant_name)+'</b></td><td><span class="vendorOperatingStatus open">등록완료</span></td><td>'+openText+'</td></tr>';
+  }).join("")+'</tbody></table></div>';
+}
+
+async function loadDashboard(){
+  var t=todayKst(),f=t.slice(0,7)+"-01",month=t.slice(0,7);
+  var all=await Promise.all([
+    post({action:"admin_records",token:token,from:f,to:t}),
+    post({action:"calendar_month",token:token,month:month}),
+    post({action:"restaurant_operating_month",token:token,month:month})
+  ]);
+  var j=all[0];
+  if(!j.ok)return;
+  adminRecords=j.records||[];
+  var today=adminRecords.filter(function(x){return x.meal_date===t}),labels={},todayTotal=0;
+  var amt=adminRecords.reduce(function(s,x){return s+Number(x.price||0)*mealUnits(x)},0);
+  today.forEach(function(x){var units=mealUnits(x);todayTotal+=units;labels[x.period_label]=(labels[x.period_label]||0)+units});
+  $("kpis").innerHTML=[["오늘 총 식수",todayTotal+"식"],["오늘 점심",(labels["점심"]||0)+"식"],["오늘 저녁",(labels["저녁"]||0)+"식"],["오늘 아침/야식",((labels["아침"]||0)+(labels["야식"]||0))+"식"],["이번달 예상 식대",num(amt)+"원"]].map(function(x){return '<div class="kpi"><span class="muted small">'+x[0]+'</span><b>'+x[1]+'</b></div>'}).join("");
+  $("dashSummary").innerHTML=summaryTable(adminRecords);
+  renderDashboardRecent();
+  if(all[1].ok&&all[2].ok)renderDashboardRestaurantOps(all[2],all[1].days||[]);
+  else $("dashRestaurantOps").innerHTML='<div class="err">식당 운영일정을 불러오지 못했습니다.</div>';
+}
 function renderUsers(){
   var q=String($("adminUserSearch")?.value||"").trim().toLowerCase();
   var rows=adminUsers.filter(function(x){
